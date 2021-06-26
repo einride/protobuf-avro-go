@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package einride.avro.example.v1;
+
+option go_package = "github.com/einride/protobuf-avro-go/internal/examples/proto/gen/einride/avro/example/v1;examplev1";
+
+import "google/type/timeofday.proto";
+
+message ExampleTimeOfDay {
+  google.type.TimeOfDay time_of_day = 1;
+}

@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all
 all: \
 	commitlint \
-	buf-check-lint \
+	buf-lint \
 	buf-generate \
 	go-lint \
 	go-review \
@@ -36,10 +36,10 @@ go-mod-tidy:
 	$(info [$@] tidying Go module files...)
 	@go mod tidy -v
 
-.PHONY: buf-check-lint
-buf-check-lint: $(buf)
+.PHONY: buf-lint
+buf-lint: $(buf)
 	$(info [$@] linting protobuf schemas...)
-	@$(buf) check lint
+	@$(buf) lint
 
 .PHONY: buf-generate
 buf-generate: $(buf) $(protoc) $(protoc_gen_go)
