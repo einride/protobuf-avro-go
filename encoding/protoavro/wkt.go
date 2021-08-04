@@ -287,16 +287,24 @@ func decodeDate(v map[string]interface{}) (*date.Date, error) {
 	if v == nil {
 		return nil, nil
 	}
+	if tm, ok := tryDecodeTime(v, "int.date"); ok {
+		d := civil.DateOf(tm)
+		return dateFromCivil(d), nil
+	}
 	i, err := decodeIntLike(v, "int.date")
 	if err != nil {
 		return nil, fmt.Errorf("google.type.Date: %w", err)
 	}
 	d := civil.Date{Year: 1970, Month: time.January, Day: 1}.AddDays(int(i))
+	return dateFromCivil(d), nil
+}
+
+func dateFromCivil(c civil.Date) *date.Date {
 	return &date.Date{
-		Year:  int32(d.Year),
-		Month: int32(d.Month),
-		Day:   int32(d.Day),
-	}, nil
+		Year:  int32(c.Year),
+		Month: int32(c.Month),
+		Day:   int32(c.Day),
+	}
 }
 
 func schemaAny() avro.Schema {
@@ -369,11 +377,18 @@ func decodeTimeOfDay(v map[string]interface{}) (*timeofday.TimeOfDay, error) {
 	if v == nil {
 		return nil, nil
 	}
+	if dur, ok := tryDecodeDuration(v, "long.time-micros"); ok {
+		return timeOfDayFromDuration(dur), nil
+	}
 	micro, err := decodeIntLike(v, "long.time-micros")
 	if err != nil {
 		return nil, fmt.Errorf("google.type.TimeOfDay: %w", err)
 	}
 	dur := time.Microsecond * time.Duration(micro)
+	return timeOfDayFromDuration(dur), nil
+}
+
+func timeOfDayFromDuration(dur time.Duration) *timeofday.TimeOfDay {
 	hours := dur.Truncate(time.Hour)
 	dur -= hours
 	minutes := dur.Truncate(time.Minute)
@@ -387,7 +402,7 @@ func decodeTimeOfDay(v map[string]interface{}) (*timeofday.TimeOfDay, error) {
 		Minutes: int32(minutes.Minutes()),
 		Seconds: int32(seconds.Seconds()),
 		Nanos:   int32(nanos.Nanoseconds()),
-	}, nil
+	}
 }
 
 func schemaDuration() avro.Schema {
@@ -417,6 +432,9 @@ func encodeTimestamp(t *timestamppb.Timestamp) map[string]interface{} {
 }
 
 func decodeTimestamp(v map[string]interface{}) (*timestamppb.Timestamp, error) {
+	if tm, ok := tryDecodeTime(v, "long.timestamp-micros"); ok {
+		return timestamppb.New(tm), nil
+	}
 	micros, err := decodeIntLike(v, "long.timestamp-micros")
 	if err != nil {
 		return nil, fmt.Errorf("google.protobuf.Timestamp: %w", err)
@@ -440,6 +458,28 @@ func decodeIntLike(v map[string]interface{}, key string) (int64, error) {
 	default:
 		return 0, fmt.Errorf("expected int-like, got %T", maybeInt)
 	}
+}
+
+func tryDecodeTime(v map[string]interface{}, key string) (time.Time, bool) {
+	maybeTime, ok := v[key]
+	if !ok {
+		return time.Time{}, false
+	}
+	if tm, ok := maybeTime.(time.Time); ok {
+		return tm, true
+	}
+	return time.Time{}, false
+}
+
+func tryDecodeDuration(v map[string]interface{}, key string) (time.Duration, bool) {
+	maybeDuration, ok := v[key]
+	if !ok {
+		return time.Duration(0), false
+	}
+	if dur, ok := maybeDuration.(time.Duration); ok {
+		return dur, true
+	}
+	return time.Duration(0), false
 }
 
 func decodeFloatLike(v map[string]interface{}, key string) (float64, error) {
