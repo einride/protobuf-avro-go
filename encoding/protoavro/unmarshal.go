@@ -23,10 +23,13 @@ type Unmarshaler struct {
 	r *goavro.OCFReader
 }
 
+// Scan returns true when there is at least one more
+// message to be read. Scan should be called prior to calling Read.
 func (m *Unmarshaler) Scan() bool {
 	return m.r.Scan()
 }
 
+// Read consumes one message from the reader and places it in msg.
 func (m *Unmarshaler) Read(msg proto.Message) error {
 	data, err := m.r.Read()
 	if err != nil {
