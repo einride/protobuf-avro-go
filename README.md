@@ -75,6 +75,28 @@ func ExampleMarshaler() {
 }
 ```
 
+### `protoavro.Unmarshaler`
+
+Reads protobuf messages from a [Object Container File][ocr].
+
+[ocr]: https://avro.apache.org/docs/current/spec.html#Object+Container+Files
+
+```go
+func ExampleUnmarshaler() {
+	var reader io.Reader
+	unmarshaller, err := protoavro.NewUnmarshaler(reader)
+	if err != nil {
+		panic(err)
+	}
+	for unmarshaller.Scan() {
+		var msg library.Book
+		if err := unmarshaller.Read(&msg); err != nil {
+			panic(err)
+		}
+	}
+}
+```
+
 ### `protoavro.EncodeJSON` + `protoavro.DecodeJSON`
 
 Avro JSON encoding of arbitrary protobuf messages.
