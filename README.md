@@ -155,3 +155,10 @@ Some **well known types** have a special mapping:
 | google.protobuf.Duration                      | `float` (seconds)                             |
 | google.type.Date                              | `int.date`                                    |
 | google.type.TimeOfDay                         | `long.time-micros`                            |
+
+
+### Limitations
+
+Avro does not have a native type for timestamps with nanosecond precision. 
+`google.protobuf.Timestamp` and `google.type.TimeOfDay` are truncated to 
+microsecond precision when encoded as Avro.
