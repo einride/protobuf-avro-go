@@ -46,7 +46,7 @@ func ExampleInferSchema() {
 
 ### `protoavro.Marshaler`
 
-Writes protobuf messages to a [Object Container File][ocr].
+Writes protobuf messages to an [Object Container File][ocr].
 
 [ocr]: https://avro.apache.org/docs/current/spec.html#Object+Container+Files
 
@@ -58,7 +58,7 @@ func ExampleMarshaler() {
     if err != nil {
         panic(err)
     }
-    if err := marshaller.Append(
+    if err := marshaller.Marshal(
         &library.Book{
             Name:   "shelves/1/books/1",
             Title:  "Harry Potter",
@@ -90,7 +90,7 @@ func ExampleUnmarshaler() {
 	}
 	for unmarshaller.Scan() {
 		var msg library.Book
-		if err := unmarshaller.Read(&msg); err != nil {
+		if err := unmarshaller.Unmarshal(&msg); err != nil {
 			panic(err)
 		}
 	}

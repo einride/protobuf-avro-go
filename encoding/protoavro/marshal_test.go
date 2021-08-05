@@ -37,7 +37,7 @@ func Test_MarshalUnmarshal(t *testing.T) {
 	marshaller, err := protoavro.NewMarshaler(msgs[0].ProtoReflect().Descriptor(), &b)
 	assert.NilError(t, err)
 	for _, msg := range msgs {
-		assert.NilError(t, marshaller.Append(msg))
+		assert.NilError(t, marshaller.Marshal(msg))
 	}
 
 	// unmarshal messages
@@ -46,7 +46,7 @@ func Test_MarshalUnmarshal(t *testing.T) {
 	got := make([]*library.Book, 0, 2)
 	for unmarshaler.Scan() {
 		var msg library.Book
-		assert.NilError(t, unmarshaler.Read(&msg))
+		assert.NilError(t, unmarshaler.Unmarshal(&msg))
 		got = append(got, &msg)
 	}
 
@@ -93,7 +93,7 @@ func Test_MarshalSymmetric(t *testing.T) {
 			// marshal messages
 			marshaller, err := protoavro.NewMarshaler(tt.msg.ProtoReflect().Descriptor(), &b)
 			assert.NilError(t, err)
-			assert.NilError(t, marshaller.Append(tt.msg))
+			assert.NilError(t, marshaller.Marshal(tt.msg))
 
 			// unmarshal messages
 			unmarshaler, err := protoavro.NewUnmarshaler(&b)
@@ -103,7 +103,7 @@ func Test_MarshalSymmetric(t *testing.T) {
 				msg := proto.Clone(tt.msg)
 				proto.Reset(msg)
 
-				assert.NilError(t, unmarshaler.Read(msg))
+				assert.NilError(t, unmarshaler.Unmarshal(msg))
 				got = append(got, msg)
 			}
 			assert.Equal(t, len(got), 1)
