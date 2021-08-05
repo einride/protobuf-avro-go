@@ -31,13 +31,14 @@ func NewMarshaler(descriptor protoreflect.MessageDescriptor, writer io.Writer) (
 	return &Marshaler{w: w, desc: descriptor}, nil
 }
 
-// Marshaler encodes and writes Avro binary formatted messages.
+// Marshaler encodes and writes Avro binary encoded messages.
 type Marshaler struct {
 	desc protoreflect.MessageDescriptor
 	w    *goavro.OCFWriter
 }
 
-func (m *Marshaler) Append(messages ...proto.Message) error {
+// Marshal encodes and writes messages to the writer.
+func (m *Marshaler) Marshal(messages ...proto.Message) error {
 	data := make([]interface{}, 0, len(messages))
 	for _, message := range messages {
 		a := message.ProtoReflect().Descriptor().FullName()
