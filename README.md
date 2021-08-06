@@ -1,9 +1,9 @@
 # Protobuf + Avro
 
-This library provides functions for converting between [Protocol Buffers][protobuf] and [Avro][avro].
+Functionality for converting between [Protocol Buffers][protobuf] and [Avro][avro].
+This can for example be used to bulk load protobuf messages to BigQuery.
 
 [protobuf]: https://developers.google.com/protocol-buffers/
-
 [avro]: https://avro.apache.org/
 
 ## Examples
