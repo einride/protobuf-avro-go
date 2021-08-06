@@ -3,9 +3,9 @@ package protoavro_test
 import (
 	"fmt"
 
-	"github.com/einride/protobuf-avro-go/avro"
-	"github.com/einride/protobuf-avro-go/encoding/protoavro"
 	"github.com/google/go-cmp/cmp"
+	"go.einride.tech/protobuf-avro/avro"
+	"go.einride.tech/protobuf-avro/encoding/protoavro"
 	"google.golang.org/genproto/googleapis/example/library/v1"
 )
 

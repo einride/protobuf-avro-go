@@ -3,7 +3,7 @@ package protoavro_test
 import (
 	"bytes"
 
-	"github.com/einride/protobuf-avro-go/encoding/protoavro"
+	"go.einride.tech/protobuf-avro/encoding/protoavro"
 	"google.golang.org/genproto/googleapis/example/library/v1"
 )
 

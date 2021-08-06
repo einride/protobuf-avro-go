@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	examplev1 "github.com/einride/protobuf-avro-go/internal/examples/proto/gen/einride/avro/example/v1"
 	"github.com/linkedin/goavro/v2"
+	examplev1 "go.einride.tech/protobuf-avro/internal/examples/proto/gen/einride/avro/example/v1"
 	"google.golang.org/genproto/googleapis/example/library/v1"
 	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/genproto/googleapis/type/datetime"

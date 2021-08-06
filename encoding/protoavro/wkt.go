@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"cloud.google.com/go/civil"
-	"github.com/einride/protobuf-avro-go/avro"
-	"github.com/einride/protobuf-avro-go/internal/wkt"
+	"go.einride.tech/protobuf-avro/avro"
+	"go.einride.tech/protobuf-avro/internal/wkt"
 	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/genproto/googleapis/type/timeofday"
 	"google.golang.org/protobuf/encoding/protojson"

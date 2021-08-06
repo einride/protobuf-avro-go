@@ -3,8 +3,8 @@ package protoavro
 import (
 	"testing"
 
-	"github.com/einride/protobuf-avro-go/avro"
-	examplev1 "github.com/einride/protobuf-avro-go/internal/examples/proto/gen/einride/avro/example/v1"
+	"go.einride.tech/protobuf-avro/avro"
+	examplev1 "go.einride.tech/protobuf-avro/internal/examples/proto/gen/einride/avro/example/v1"
 	"google.golang.org/genproto/googleapis/example/library/v1"
 	"google.golang.org/protobuf/proto"
 	"gotest.tools/v3/assert"
