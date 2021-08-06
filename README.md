@@ -97,43 +97,6 @@ func ExampleUnmarshaler() {
 }
 ```
 
-### `protoavro.EncodeJSON` + `protoavro.DecodeJSON`
-
-Avro JSON encoding of arbitrary protobuf messages.
-
-```go
-func ExampleEncodeJSON() {
-    msg := &library.Book{
-        Name:   "books/1",
-        Author: "J. K. Rowling",
-        Title:  "Harry Potter",
-        Read:   true,
-    }
-    encoded, err := protoavro.EncodeJSON(msg)
-    if err != nil {
-        panic(err)
-    }
-    var decoded library.Book
-    if err := protoavro.DecodeJSON(encoded, &decoded); err != nil {
-        panic(err)
-    }
-    
-    encodedBytes, err := json.MarshalIndent(encoded, "", "\t")
-    fmt.Println(string(encodedBytes))
-    fmt.Println(cmp.Equal(msg, &decoded, protocmp.Transform()))
-    // Output:
-    // {
-    //	"google.example.library.v1.Book": {
-    //		"author": "J. K. Rowling",
-    //		"name": "books/1",
-    //		"read": true,
-    //		"title": "Harry Potter"
-    //	}
-    // }
-    // true
-}
-```
-
 ### Mapping
 
 **Messages** are mapped as nullable records in Avro. Fields will have the same casing as in the protobuf descriptor.

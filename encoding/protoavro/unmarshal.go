@@ -35,7 +35,7 @@ func (m *Unmarshaler) Unmarshal(message proto.Message) error {
 	if err != nil {
 		return fmt.Errorf("read message: %w", err)
 	}
-	if err := DecodeJSON(data, message); err != nil {
+	if err := decodeJSON(data, message); err != nil {
 		return fmt.Errorf("decode message: %w", err)
 	}
 	return nil
