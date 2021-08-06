@@ -1,4 +1,4 @@
-module github.com/einride/protobuf-avro-go
+module go.einride.tech/protobuf-avro
 
 go 1.16
 

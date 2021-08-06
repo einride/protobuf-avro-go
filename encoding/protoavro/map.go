@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/einride/protobuf-avro-go/avro"
+	"go.einride.tech/protobuf-avro/avro"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
