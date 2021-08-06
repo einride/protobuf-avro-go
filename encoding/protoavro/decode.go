@@ -7,9 +7,9 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-// DecodeJSON decodes the JSON encoded avro data and places the
+// decodeJSON decodes the JSON encoded avro data and places the
 // result in msg.
-func DecodeJSON(data interface{}, msg proto.Message) error {
+func decodeJSON(data interface{}, msg proto.Message) error {
 	return decodeMessage(data, msg.ProtoReflect())
 }
 
