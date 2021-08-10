@@ -22,31 +22,31 @@ func Test_MapSchema(t *testing.T) {
 			name:      "string to string",
 			msg:       &examplev1.ExampleMap{},
 			fieldName: "string_to_string",
-			expected: avro.Array{
+			expected: avro.Nullable(avro.Array{
 				Type: avro.ArrayType,
 				Items: avro.Record{
 					Type:      avro.RecordType,
 					Name:      "StringToStringEntry",
 					Namespace: "einride.avro.example.v1.ExampleMap",
 					Fields: []avro.Field{
-						{Name: "key", Type: avro.String()},
-						{Name: "value", Type: avro.String()},
+						{Name: "key", Type: avro.Nullable(avro.String())},
+						{Name: "value", Type: avro.Nullable(avro.String())},
 					},
 				},
-			},
+			}),
 		},
 		{
 			name:      "nested map",
 			msg:       &examplev1.ExampleMap{},
 			fieldName: "string_to_nested",
-			expected: avro.Array{
+			expected: avro.Nullable(avro.Array{
 				Type: avro.ArrayType,
 				Items: avro.Record{
 					Type:      avro.RecordType,
 					Name:      "StringToNestedEntry",
 					Namespace: "einride.avro.example.v1.ExampleMap",
 					Fields: []avro.Field{
-						{Name: "key", Type: avro.String()},
+						{Name: "key", Type: avro.Nullable(avro.String())},
 						{
 							Name: "value",
 							Type: avro.Nullable(avro.Record{
@@ -56,40 +56,40 @@ func Test_MapSchema(t *testing.T) {
 								Fields: []avro.Field{
 									{
 										Name: "string_to_string",
-										Type: avro.Array{
+										Type: avro.Nullable(avro.Array{
 											Type: avro.ArrayType,
 											Items: avro.Record{
 												Type:      avro.RecordType,
 												Name:      "StringToStringEntry",
 												Namespace: "einride.avro.example.v1.ExampleMap.Nested",
 												Fields: []avro.Field{
-													{Name: "key", Type: avro.String()},
-													{Name: "value", Type: avro.String()},
+													{Name: "key", Type: avro.Nullable(avro.String())},
+													{Name: "value", Type: avro.Nullable(avro.String())},
 												},
 											},
-										},
+										}),
 									},
 								},
 							}),
 						},
 					},
 				},
-			},
+			}),
 		},
 		{
 			name:      "enum value",
 			msg:       &examplev1.ExampleMap{},
 			fieldName: "string_to_enum",
-			expected: avro.Array{
+			expected: avro.Nullable(avro.Array{
 				Type: avro.ArrayType,
 				Items: avro.Record{
 					Type:      avro.RecordType,
 					Name:      "StringToEnumEntry",
 					Namespace: "einride.avro.example.v1.ExampleMap",
 					Fields: []avro.Field{
-						{Name: "key", Type: avro.String()},
+						{Name: "key", Type: avro.Nullable(avro.String())},
 						{
-							Name: "value", Type: avro.Enum{
+							Name: "value", Type: avro.Nullable(avro.Enum{
 								Type:      avro.EnumType,
 								Name:      "Enum",
 								Namespace: "einride.avro.example.v1.ExampleMap",
@@ -98,79 +98,79 @@ func Test_MapSchema(t *testing.T) {
 									"ENUM_VALUE1",
 									"ENUM_VALUE2",
 								},
-							},
+							}),
 						},
 					},
 				},
-			},
+			}),
 		},
 		{
 			name:      "int32 key",
 			msg:       &examplev1.ExampleMap{},
 			fieldName: "int32_to_string",
-			expected: avro.Array{
+			expected: avro.Nullable(avro.Array{
 				Type: avro.ArrayType,
 				Items: avro.Record{
 					Type:      avro.RecordType,
 					Name:      "Int32ToStringEntry",
 					Namespace: "einride.avro.example.v1.ExampleMap",
 					Fields: []avro.Field{
-						{Name: "key", Type: avro.Integer()},
-						{Name: "value", Type: avro.String()},
+						{Name: "key", Type: avro.Nullable(avro.Integer())},
+						{Name: "value", Type: avro.Nullable(avro.String())},
 					},
 				},
-			},
+			}),
 		},
 		{
 			name:      "int64 key",
 			msg:       &examplev1.ExampleMap{},
 			fieldName: "int64_to_string",
-			expected: avro.Array{
+			expected: avro.Nullable(avro.Array{
 				Type: avro.ArrayType,
 				Items: avro.Record{
 					Type:      avro.RecordType,
 					Name:      "Int64ToStringEntry",
 					Namespace: "einride.avro.example.v1.ExampleMap",
 					Fields: []avro.Field{
-						{Name: "key", Type: avro.Long()},
-						{Name: "value", Type: avro.String()},
+						{Name: "key", Type: avro.Nullable(avro.Long())},
+						{Name: "value", Type: avro.Nullable(avro.String())},
 					},
 				},
-			},
+			}),
 		},
 		{
 			name:      "uint32 key",
 			msg:       &examplev1.ExampleMap{},
 			fieldName: "uint32_to_string",
-			expected: avro.Array{
+			expected: avro.Nullable(avro.Array{
 				Type: avro.ArrayType,
 				Items: avro.Record{
 					Type:      avro.RecordType,
 					Name:      "Uint32ToStringEntry",
 					Namespace: "einride.avro.example.v1.ExampleMap",
 					Fields: []avro.Field{
-						{Name: "key", Type: avro.Integer()},
-						{Name: "value", Type: avro.String()},
+						{Name: "key", Type: avro.Nullable(avro.Integer())},
+						{Name: "value", Type: avro.Nullable(avro.String())},
 					},
 				},
-			},
+			}),
 		},
 		{
 			name:      "bool key",
 			msg:       &examplev1.ExampleMap{},
 			fieldName: "bool_to_string",
-			expected: avro.Array{
+			expected: avro.Nullable(avro.Array{
 				Type: avro.ArrayType,
 				Items: avro.Record{
 					Type:      avro.RecordType,
 					Name:      "BoolToStringEntry",
 					Namespace: "einride.avro.example.v1.ExampleMap",
 					Fields: []avro.Field{
-						{Name: "key", Type: avro.Boolean()},
-						{Name: "value", Type: avro.String()},
+						{Name: "key", Type: avro.Nullable(avro.Boolean())},
+						{Name: "value", Type: avro.Nullable(avro.String())},
 					},
 				},
-			},
+			}),
 		},
 	} {
 		tt := tt
@@ -199,10 +199,21 @@ func Test_MapEncode(t *testing.T) {
 				},
 			},
 			fieldName: "string_to_string",
-			expected: []interface{}{
-				map[string]interface{}{"key": "1", "value": "a"},
-				map[string]interface{}{"key": "2", "value": "b"},
-				map[string]interface{}{"key": "3", "value": "c"},
+			expected: map[string]interface{}{
+				"array": []interface{}{
+					map[string]interface{}{
+						"key":   map[string]interface{}{"string": "1"},
+						"value": map[string]interface{}{"string": "a"},
+					},
+					map[string]interface{}{
+						"key":   map[string]interface{}{"string": "2"},
+						"value": map[string]interface{}{"string": "b"},
+					},
+					map[string]interface{}{
+						"key":   map[string]interface{}{"string": "3"},
+						"value": map[string]interface{}{"string": "c"},
+					},
+				},
 			},
 		},
 		{
@@ -215,10 +226,21 @@ func Test_MapEncode(t *testing.T) {
 				},
 			},
 			fieldName: "int32_to_string",
-			expected: []interface{}{
-				map[string]interface{}{"key": int32(1), "value": "a"},
-				map[string]interface{}{"key": int32(2), "value": "b"},
-				map[string]interface{}{"key": int32(3), "value": "c"},
+			expected: map[string]interface{}{
+				"array": []interface{}{
+					map[string]interface{}{
+						"key":   map[string]interface{}{"int": int32(1)},
+						"value": map[string]interface{}{"string": "a"},
+					},
+					map[string]interface{}{
+						"key":   map[string]interface{}{"int": int32(2)},
+						"value": map[string]interface{}{"string": "b"},
+					},
+					map[string]interface{}{
+						"key":   map[string]interface{}{"int": int32(3)},
+						"value": map[string]interface{}{"string": "c"},
+					},
+				},
 			},
 		},
 	} {
@@ -264,7 +286,7 @@ func Test_MapDecode(t *testing.T) {
 			msg:       &examplev1.ExampleMap{},
 			fieldName: "string_to_string",
 			data:      map[string]int32{},
-			expectErr: "expected list, got map[string]int32 for 'string_to_string'",
+			expectErr: "expected list-like, got map[]",
 		},
 		{
 			name:      "invalid element type",

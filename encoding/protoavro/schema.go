@@ -44,6 +44,8 @@ func (s schemaInferrer) inferMessageSchema(message protoreflect.MessageDescripto
 		if err != nil {
 			return nil, err
 		}
+
+		fieldSchema.Type = avro.Nullable(fieldSchema.Type)
 		record.Fields = append(
 			record.Fields,
 			fieldSchema,
@@ -82,7 +84,7 @@ func (s schemaInferrer) inferField(field protoreflect.FieldDescriptor) (avro.Fie
 			Doc:  doc,
 			Type: avro.Array{
 				Type:  avro.ArrayType,
-				Items: fieldKind,
+				Items: avro.Nullable(fieldKind),
 			},
 		}, nil
 	}

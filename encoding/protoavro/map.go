@@ -13,10 +13,10 @@ func (s schemaInferrer) inferMapSchema(field protoreflect.FieldDescriptor) (avro
 	if err != nil {
 		return nil, err
 	}
-	return avro.Array{
+	return avro.Nullable(avro.Array{
 		Type:  avro.ArrayType,
 		Items: fieldKind,
-	}, nil
+	}), nil
 }
 
 func encodeMap(field protoreflect.FieldDescriptor, m protoreflect.Map) (interface{}, error) {
@@ -52,13 +52,13 @@ func encodeMap(field protoreflect.FieldDescriptor, m protoreflect.Map) (interfac
 			"value": valueValue,
 		})
 	}
-	return entries, nil
+	return unionValue("array", entries), nil
 }
 
 func decodeMap(data interface{}, f protoreflect.FieldDescriptor, mp protoreflect.Map) error {
-	list, ok := data.([]interface{})
-	if !ok {
-		return fmt.Errorf("expected list, got %T for '%s'", data, f.Name())
+	list, err := decodeListLike(data, "array")
+	if err != nil {
+		return err
 	}
 	return decodeMapEntries(list, f, mp)
 }
