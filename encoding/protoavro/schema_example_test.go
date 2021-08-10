@@ -20,10 +20,10 @@ func ExampleInferSchema() {
 		Name:      "Book",
 		Namespace: "google.example.library.v1",
 		Fields: []avro.Field{
-			{Name: "name", Type: avro.String()},
-			{Name: "author", Type: avro.String()},
-			{Name: "title", Type: avro.String()},
-			{Name: "read", Type: avro.Boolean()},
+			{Name: "name", Type: avro.Nullable(avro.String())},
+			{Name: "author", Type: avro.Nullable(avro.String())},
+			{Name: "title", Type: avro.Nullable(avro.String())},
+			{Name: "read", Type: avro.Nullable(avro.Boolean())},
 		},
 	})
 	fmt.Println(cmp.Equal(expected, schema))

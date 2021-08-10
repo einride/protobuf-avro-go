@@ -219,25 +219,25 @@ func decodeWrapper(w string, v map[string]interface{}) (proto.Message, error) {
 		}
 		return wrapperspb.Float(float32(f)), nil
 	case wkt.UInt32Value:
-		i, err := decodeIntLike(v, "int")
+		i, err := decodeInt(v, "int")
 		if err != nil {
 			return nil, fmt.Errorf("google.protobuf.UInt32Value: %w", err)
 		}
 		return wrapperspb.UInt32(uint32(i)), nil
 	case wkt.UInt64Value:
-		i, err := decodeIntLike(v, "long")
+		i, err := decodeInt(v, "long")
 		if err != nil {
 			return nil, fmt.Errorf("google.protobuf.UInt32Value: %w", err)
 		}
 		return wrapperspb.UInt64(uint64(i)), nil
 	case wkt.Int32Value:
-		i, err := decodeIntLike(v, "int")
+		i, err := decodeInt(v, "int")
 		if err != nil {
 			return nil, fmt.Errorf("google.protobuf.Int32Value: %w", err)
 		}
 		return wrapperspb.Int32(int32(i)), nil
 	case wkt.Int64Value:
-		i, err := decodeIntLike(v, "long")
+		i, err := decodeInt(v, "long")
 		if err != nil {
 			return nil, fmt.Errorf("google.protobuf.Int32Value: %w", err)
 		}
@@ -291,7 +291,7 @@ func decodeDate(v map[string]interface{}) (*date.Date, error) {
 		d := civil.DateOf(tm)
 		return dateFromCivil(d), nil
 	}
-	i, err := decodeIntLike(v, "int.date")
+	i, err := decodeInt(v, "int.date")
 	if err != nil {
 		return nil, fmt.Errorf("google.type.Date: %w", err)
 	}
@@ -380,7 +380,7 @@ func decodeTimeOfDay(v map[string]interface{}) (*timeofday.TimeOfDay, error) {
 	if dur, ok := tryDecodeDuration(v, "long.time-micros"); ok {
 		return timeOfDayFromDuration(dur), nil
 	}
-	micro, err := decodeIntLike(v, "long.time-micros")
+	micro, err := decodeInt(v, "long.time-micros")
 	if err != nil {
 		return nil, fmt.Errorf("google.type.TimeOfDay: %w", err)
 	}
@@ -435,7 +435,7 @@ func decodeTimestamp(v map[string]interface{}) (*timestamppb.Timestamp, error) {
 	if tm, ok := tryDecodeTime(v, "long.timestamp-micros"); ok {
 		return timestamppb.New(tm), nil
 	}
-	micros, err := decodeIntLike(v, "long.timestamp-micros")
+	micros, err := decodeInt(v, "long.timestamp-micros")
 	if err != nil {
 		return nil, fmt.Errorf("google.protobuf.Timestamp: %w", err)
 	}
@@ -443,7 +443,17 @@ func decodeTimestamp(v map[string]interface{}) (*timestamppb.Timestamp, error) {
 	return timestamppb.New(t), nil
 }
 
-func decodeIntLike(v map[string]interface{}, key string) (int64, error) {
+func decodeIntLike(v interface{}, key string) (int64, error) {
+	if i, ok := v.(int); ok {
+		return int64(i), nil
+	}
+	if m, ok := v.(map[string]interface{}); ok {
+		return decodeInt(m, key)
+	}
+	return 0, fmt.Errorf("expected int-like, got %v", v)
+}
+
+func decodeInt(v map[string]interface{}, key string) (int64, error) {
 	maybeInt, ok := v[key]
 	if !ok {
 		return 0, fmt.Errorf("expected key '%s'", key)
@@ -497,6 +507,16 @@ func decodeFloatLike(v map[string]interface{}, key string) (float64, error) {
 	}
 }
 
+func decodeStringLike(v interface{}, key string) (string, error) {
+	if str, ok := v.(string); ok {
+		return str, nil
+	}
+	if m, ok := v.(map[string]interface{}); ok {
+		return decodeString(m, key)
+	}
+	return "", fmt.Errorf("expected string-like, got %v", v)
+}
+
 func decodeString(v map[string]interface{}, key string) (string, error) {
 	maybeString, ok := v[key]
 	if !ok {
@@ -508,6 +528,16 @@ func decodeString(v map[string]interface{}, key string) (string, error) {
 	default:
 		return "", fmt.Errorf("expected string, got %T", maybeString)
 	}
+}
+
+func decodeBytesLike(v interface{}, key string) ([]byte, error) {
+	if bs, ok := v.([]byte); ok {
+		return bs, nil
+	}
+	if m, ok := v.(map[string]interface{}); ok {
+		return decodeBytes(m, key)
+	}
+	return nil, fmt.Errorf("expected bytes-like, got %v", v)
 }
 
 func decodeBytes(v map[string]interface{}, key string) ([]byte, error) {
@@ -523,6 +553,16 @@ func decodeBytes(v map[string]interface{}, key string) ([]byte, error) {
 	}
 }
 
+func decodeBoolLike(v interface{}, key string) (bool, error) {
+	if str, ok := v.(bool); ok {
+		return str, nil
+	}
+	if m, ok := v.(map[string]interface{}); ok {
+		return decodeBool(m, key)
+	}
+	return false, fmt.Errorf("expected bool-like, got %v", v)
+}
+
 func decodeBool(v map[string]interface{}, key string) (bool, error) {
 	maybeBool, ok := v[key]
 	if !ok {
@@ -533,5 +573,28 @@ func decodeBool(v map[string]interface{}, key string) (bool, error) {
 		return b, nil
 	default:
 		return false, fmt.Errorf("expected bool, got %T", maybeBool)
+	}
+}
+
+func decodeListLike(v interface{}, key string) ([]interface{}, error) {
+	if list, ok := v.([]interface{}); ok {
+		return list, nil
+	}
+	if m, ok := v.(map[string]interface{}); ok {
+		return decodeList(m, key)
+	}
+	return nil, fmt.Errorf("expected list-like, got %v", v)
+}
+
+func decodeList(v map[string]interface{}, key string) ([]interface{}, error) {
+	maybeList, ok := v[key]
+	if !ok {
+		return nil, fmt.Errorf("expected key '%s'", key)
+	}
+	switch list := maybeList.(type) {
+	case []interface{}:
+		return list, nil
+	default:
+		return nil, fmt.Errorf("expected list, got %T", maybeList)
 	}
 }

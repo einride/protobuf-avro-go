@@ -55,9 +55,9 @@ func decodeField(data interface{}, val protoreflect.Message, f protoreflect.Fiel
 		val.Set(f, protoreflect.ValueOfMap(mp))
 		return nil
 	case f.IsList():
-		listData, ok := data.([]interface{})
-		if !ok {
-			return fmt.Errorf("expected list, got %T", data)
+		listData, err := decodeListLike(data, "array")
+		if err != nil {
+			return err
 		}
 		list := val.NewField(f).List()
 		for _, el := range listData {
@@ -85,57 +85,57 @@ func decodeField(data interface{}, val protoreflect.Message, f protoreflect.Fiel
 
 func decodeFieldKind(data interface{}, mutable protoreflect.Value, f protoreflect.FieldDescriptor) (protoreflect.Value, error) {
 	switch f.Kind() {
-	case protoreflect.StringKind:
-		str, ok := data.(string)
-		if !ok {
-			return protoreflect.Value{}, fmt.Errorf("field %s: expected string, got %T", f.Name(), data)
-		}
-		return protoreflect.ValueOfString(str), nil
-	case protoreflect.BoolKind:
-		bo, ok := data.(bool)
-		if !ok {
-			return protoreflect.Value{}, fmt.Errorf("field %s: expected bool, got %T", f.Name(), data)
-		}
-		return protoreflect.ValueOfBool(bo), nil
 	case protoreflect.MessageKind, protoreflect.GroupKind:
 		if err := decodeMessage(data, mutable.Message()); err != nil {
 			return protoreflect.Value{}, err
 		}
 		return mutable, nil
-	case protoreflect.Int32Kind, protoreflect.Sfixed32Kind, protoreflect.Sint32Kind:
-		i, ok := data.(int32)
-		if !ok {
-			return protoreflect.Value{}, fmt.Errorf("field %s: expected int32, got %T", f.Name(), data)
+	case protoreflect.StringKind:
+		str, err := decodeStringLike(data, "string")
+		if err != nil {
+			return protoreflect.Value{}, fmt.Errorf("field %s: %w", f.Name(), err)
 		}
-		return protoreflect.ValueOfInt32(i), nil
+		return protoreflect.ValueOfString(str), nil
+	case protoreflect.BoolKind:
+		bo, err := decodeBoolLike(data, "boolean")
+		if err != nil {
+			return protoreflect.Value{}, fmt.Errorf("field %s: %w", f.Name(), err)
+		}
+		return protoreflect.ValueOfBool(bo), nil
+	case protoreflect.Int32Kind, protoreflect.Sfixed32Kind, protoreflect.Sint32Kind:
+		i, err := decodeIntLike(data, "int")
+		if err != nil {
+			return protoreflect.Value{}, fmt.Errorf("field %s: %w", f.Name(), err)
+		}
+		return protoreflect.ValueOfInt32(int32(i)), nil
 	case protoreflect.Int64Kind, protoreflect.Sfixed64Kind, protoreflect.Sint64Kind:
-		i, ok := data.(int64)
-		if !ok {
-			return protoreflect.Value{}, fmt.Errorf("field %s: expected int64, got %T", f.Name(), data)
+		i, err := decodeIntLike(data, "long")
+		if err != nil {
+			return protoreflect.Value{}, fmt.Errorf("field %s: %w", f.Name(), err)
 		}
 		return protoreflect.ValueOfInt64(i), nil
 	case protoreflect.Uint32Kind, protoreflect.Fixed32Kind:
-		i, ok := data.(int32)
-		if !ok {
-			return protoreflect.Value{}, fmt.Errorf("field %s: expected int32, got %T", f.Name(), data)
+		i, err := decodeIntLike(data, "int")
+		if err != nil {
+			return protoreflect.Value{}, fmt.Errorf("field %s: %w", f.Name(), err)
 		}
 		return protoreflect.ValueOfUint32(uint32(i)), nil
 	case protoreflect.Uint64Kind, protoreflect.Fixed64Kind:
-		i, ok := data.(int64)
-		if !ok {
-			return protoreflect.Value{}, fmt.Errorf("field %s: expected int64, got %T", f.Name(), data)
+		i, err := decodeIntLike(data, "long")
+		if err != nil {
+			return protoreflect.Value{}, fmt.Errorf("field %s: %w", f.Name(), err)
 		}
 		return protoreflect.ValueOfUint64(uint64(i)), nil
 	case protoreflect.BytesKind:
-		bs, ok := data.([]byte)
-		if !ok {
-			return protoreflect.Value{}, fmt.Errorf("field %s: expected []byte, got %T", f.Name(), data)
+		bs, err := decodeBytesLike(data, "bytes")
+		if err != nil {
+			return protoreflect.Value{}, fmt.Errorf("field %s: %w", f.Name(), err)
 		}
 		return protoreflect.ValueOfBytes(bs), nil
 	case protoreflect.EnumKind:
-		str, ok := data.(string)
-		if !ok {
-			return protoreflect.Value{}, fmt.Errorf("field %s: expected string, got %T", f.Name(), data)
+		str, err := decodeStringLike(data, string(f.Enum().FullName()))
+		if err != nil {
+			return protoreflect.Value{}, fmt.Errorf("field %s: %w", f.Name(), err)
 		}
 		if v := f.Enum().Values().ByName(protoreflect.Name(str)); v != nil {
 			return protoreflect.ValueOfEnum(v.Number()), nil
