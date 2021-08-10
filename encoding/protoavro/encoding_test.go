@@ -520,7 +520,7 @@ func Test_JSON(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			// t.Parallel()
-			got, err := EncodeJSON(tt.msg)
+			got, err := encodeJSON(tt.msg)
 			assert.NilError(t, err)
 			assert.DeepEqual(t, tt.expected, got)
 
