@@ -5,8 +5,8 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-// EncodeJSON returns the Avro JSON encoding of message.
-func EncodeJSON(message proto.Message) (interface{}, error) {
+// encodeJSON returns the Avro JSON encoding of message.
+func encodeJSON(message proto.Message) (interface{}, error) {
 	return messageJSON(message.ProtoReflect())
 }
 

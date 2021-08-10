@@ -46,7 +46,7 @@ func (m *Marshaler) Marshal(messages ...proto.Message) error {
 		if a != b {
 			return fmt.Errorf("expected message '%s' but got '%s'", a, b)
 		}
-		m, err := EncodeJSON(message)
+		m, err := encodeJSON(message)
 		if err != nil {
 			return fmt.Errorf("encode json: %w", err)
 		}
