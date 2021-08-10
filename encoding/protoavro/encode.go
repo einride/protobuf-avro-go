@@ -69,7 +69,7 @@ func fieldJSON(field protoreflect.FieldDescriptor, value protoreflect.Value) (in
 			}
 			list = append(list, fieldValue)
 		}
-		return list, nil
+		return unionValue("array", list), nil
 	}
 	if field.IsMap() {
 		return encodeMap(field, value.Map())
@@ -82,31 +82,34 @@ func fieldKindJSON(field protoreflect.FieldDescriptor, value protoreflect.Value)
 	case protoreflect.MessageKind, protoreflect.GroupKind:
 		return messageJSON(value.Message())
 	case protoreflect.EnumKind:
-		return string(field.Enum().Values().Get(int(value.Enum())).Name()), nil
+		return unionValue(
+			string(field.Enum().FullName()),
+			string(field.Enum().Values().Get(int(value.Enum())).Name()),
+		), nil
 	case protoreflect.StringKind:
-		return value.String(), nil
+		return unionValue("string", value.String()), nil
 	case protoreflect.Int32Kind,
 		protoreflect.Fixed32Kind,
 		protoreflect.Sfixed32Kind,
 		protoreflect.Sint32Kind:
-		return int32(value.Int()), nil
+		return unionValue("int", int32(value.Int())), nil
 	case protoreflect.Uint32Kind:
-		return int32(value.Uint()), nil
+		return unionValue("int", int32(value.Uint())), nil
 	case protoreflect.Int64Kind,
 		protoreflect.Fixed64Kind,
 		protoreflect.Sfixed64Kind,
 		protoreflect.Sint64Kind:
-		return value.Int(), nil
+		return unionValue("long", value.Int()), nil
 	case protoreflect.Uint64Kind:
-		return int64(value.Uint()), nil
+		return unionValue("long", int64(value.Uint())), nil
 	case protoreflect.BoolKind:
-		return value.Bool(), nil
+		return unionValue("boolean", value.Bool()), nil
 	case protoreflect.BytesKind:
-		return value.Bytes(), nil
+		return unionValue("bytes", value.Bytes()), nil
 	case protoreflect.DoubleKind:
-		return value.Float(), nil
+		return unionValue("double", value.Float()), nil
 	case protoreflect.FloatKind:
-		return float32(value.Float()), nil
+		return unionValue("float", float32(value.Float())), nil
 	}
 	return value.Interface(), nil
 }

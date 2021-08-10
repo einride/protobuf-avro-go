@@ -38,10 +38,10 @@ func Test_JSON(t *testing.T) {
 			},
 			expected: map[string]interface{}{
 				"google.example.library.v1.Book": map[string]interface{}{
-					"name":   "books/1",
-					"author": "J. K. Rowling",
-					"title":  "Harry Potter",
-					"read":   true,
+					"name":   map[string]interface{}{"string": "books/1"},
+					"author": map[string]interface{}{"string": "J. K. Rowling"},
+					"title":  map[string]interface{}{"string": "Harry Potter"},
+					"read":   map[string]interface{}{"boolean": true},
 				},
 			},
 		},
@@ -59,10 +59,10 @@ func Test_JSON(t *testing.T) {
 				"google.example.library.v1.UpdateBookRequest": map[string]interface{}{
 					"book": map[string]interface{}{
 						"google.example.library.v1.Book": map[string]interface{}{
-							"name":   "books/1",
-							"author": "J. K. Rowling",
-							"title":  "Harry Potter",
-							"read":   false,
+							"name":   map[string]interface{}{"string": "books/1"},
+							"author": map[string]interface{}{"string": "J. K. Rowling"},
+							"title":  map[string]interface{}{"string": "Harry Potter"},
+							"read":   map[string]interface{}{"boolean": false},
 						},
 					},
 					"update_mask": nil,
@@ -94,7 +94,7 @@ func Test_JSON(t *testing.T) {
 			},
 			expected: map[string]interface{}{
 				"einride.avro.example.v1.ExampleBytes": map[string]interface{}{
-					"bytes": []byte{1, 2, 3},
+					"bytes": map[string]interface{}{"bytes": []byte{1, 2, 3}},
 				},
 			},
 		},
@@ -131,13 +131,13 @@ func Test_JSON(t *testing.T) {
 				"einride.avro.example.v1.ExampleDateTime": map[string]interface{}{
 					"date_time": map[string]interface{}{
 						"google.type.DateTime": map[string]interface{}{
-							"year":      int32(2021),
-							"month":     int32(6),
-							"day":       int32(27),
-							"hours":     int32(18),
-							"minutes":   int32(6),
-							"seconds":   int32(30),
-							"nanos":     int32(2),
+							"year":      map[string]interface{}{"int": int32(2021)},
+							"month":     map[string]interface{}{"int": int32(6)},
+							"day":       map[string]interface{}{"int": int32(27)},
+							"hours":     map[string]interface{}{"int": int32(18)},
+							"minutes":   map[string]interface{}{"int": int32(6)},
+							"seconds":   map[string]interface{}{"int": int32(30)},
+							"nanos":     map[string]interface{}{"int": int32(2)},
 							"time_zone": nil,
 							"utc_offset": map[string]interface{}{
 								"float": float64(3600),
@@ -167,7 +167,7 @@ func Test_JSON(t *testing.T) {
 			},
 			expected: map[string]interface{}{
 				"einride.avro.example.v1.ExampleEnum": map[string]interface{}{
-					"enum_value": "ENUM_VALUE2",
+					"enum_value": map[string]interface{}{"einride.avro.example.v1.ExampleEnum.Enum": "ENUM_VALUE2"},
 				},
 			},
 		},
@@ -194,30 +194,60 @@ func Test_JSON(t *testing.T) {
 			},
 			expected: map[string]interface{}{
 				"einride.avro.example.v1.ExampleList": map[string]interface{}{
-					"int64_list":  []interface{}{int64(1), int64(2), int64(3)},
-					"string_list": []interface{}{"1", "2", "3"},
-					"enum_list": []interface{}{
-						"ENUM_UNSPECIFIED",
-						"ENUM_VALUE1",
-						"ENUM_VALUE2",
-					},
-					"nested_list": []interface{}{
-						map[string]interface{}{
-							"einride.avro.example.v1.ExampleList.Nested": map[string]interface{}{
-								"string_list": []interface{}{"1", "2", "3"},
-							},
-						},
-						map[string]interface{}{
-							"einride.avro.example.v1.ExampleList.Nested": map[string]interface{}{
-								"string_list": []interface{}{"4", "5", "6"},
-							},
+					"int64_list": map[string]interface{}{
+						"array": []interface{}{
+							map[string]interface{}{"long": int64(1)},
+							map[string]interface{}{"long": int64(2)},
+							map[string]interface{}{"long": int64(3)},
 						},
 					},
-					"float_value_list": []interface{}{
-						nil,
-						map[string]interface{}{"float": float32(1)},
-						map[string]interface{}{"float": float32(2)},
-						map[string]interface{}{"float": float32(3)},
+					"string_list": map[string]interface{}{
+						"array": []interface{}{
+							map[string]interface{}{"string": "1"},
+							map[string]interface{}{"string": "2"},
+							map[string]interface{}{"string": "3"},
+						},
+					},
+					"enum_list": map[string]interface{}{
+						"array": []interface{}{
+							map[string]interface{}{"einride.avro.example.v1.ExampleList.Enum": "ENUM_UNSPECIFIED"},
+							map[string]interface{}{"einride.avro.example.v1.ExampleList.Enum": "ENUM_VALUE1"},
+							map[string]interface{}{"einride.avro.example.v1.ExampleList.Enum": "ENUM_VALUE2"},
+						},
+					},
+					"nested_list": map[string]interface{}{
+						"array": []interface{}{
+							map[string]interface{}{
+								"einride.avro.example.v1.ExampleList.Nested": map[string]interface{}{
+									"string_list": map[string]interface{}{
+										"array": []interface{}{
+											map[string]interface{}{"string": "1"},
+											map[string]interface{}{"string": "2"},
+											map[string]interface{}{"string": "3"},
+										},
+									},
+								},
+							},
+							map[string]interface{}{
+								"einride.avro.example.v1.ExampleList.Nested": map[string]interface{}{
+									"string_list": map[string]interface{}{
+										"array": []interface{}{
+											map[string]interface{}{"string": "4"},
+											map[string]interface{}{"string": "5"},
+											map[string]interface{}{"string": "6"},
+										},
+									},
+								},
+							},
+						},
+					},
+					"float_value_list": map[string]interface{}{
+						"array": []interface{}{
+							nil,
+							map[string]interface{}{"float": float32(1)},
+							map[string]interface{}{"float": float32(2)},
+							map[string]interface{}{"float": float32(3)},
+						},
 					},
 				},
 			},
@@ -270,110 +300,130 @@ func Test_JSON(t *testing.T) {
 			},
 			expected: map[string]interface{}{
 				"einride.avro.example.v1.ExampleMap": map[string]interface{}{
-					"string_to_string": []interface{}{
-						map[string]interface{}{
-							"key":   "1",
-							"value": "a",
-						},
-						map[string]interface{}{
-							"key":   "2",
-							"value": "b",
+					"string_to_string": map[string]interface{}{
+						"array": []interface{}{
+							map[string]interface{}{
+								"key":   map[string]interface{}{"string": "1"},
+								"value": map[string]interface{}{"string": "a"},
+							},
+							map[string]interface{}{
+								"key":   map[string]interface{}{"string": "2"},
+								"value": map[string]interface{}{"string": "b"},
+							},
 						},
 					},
-					"string_to_nested": []interface{}{
-						map[string]interface{}{
-							"key": "1",
-							"value": map[string]interface{}{
-								"einride.avro.example.v1.ExampleMap.Nested": map[string]interface{}{
-									"string_to_string": []interface{}{
-										map[string]interface{}{
-											"key":   "1",
-											"value": "a",
+					"string_to_nested": map[string]interface{}{
+						"array": []interface{}{
+							map[string]interface{}{
+								"key": map[string]interface{}{"string": "1"},
+								"value": map[string]interface{}{
+									"einride.avro.example.v1.ExampleMap.Nested": map[string]interface{}{
+										"string_to_string": map[string]interface{}{
+											"array": []interface{}{
+												map[string]interface{}{
+													"key":   map[string]interface{}{"string": "1"},
+													"value": map[string]interface{}{"string": "a"},
+												},
+												map[string]interface{}{
+													"key":   map[string]interface{}{"string": "2"},
+													"value": map[string]interface{}{"string": "b"},
+												},
+											},
 										},
-										map[string]interface{}{
-											"key":   "2",
-											"value": "b",
+									},
+								},
+							},
+							map[string]interface{}{
+								"key": map[string]interface{}{"string": "3"},
+								"value": map[string]interface{}{
+									"einride.avro.example.v1.ExampleMap.Nested": map[string]interface{}{
+										"string_to_string": map[string]interface{}{
+											"array": []interface{}{
+												map[string]interface{}{
+													"key":   map[string]interface{}{"string": "3"},
+													"value": map[string]interface{}{"string": "c"},
+												},
+												map[string]interface{}{
+													"key":   map[string]interface{}{"string": "4"},
+													"value": map[string]interface{}{"string": "d"},
+												},
+											},
 										},
 									},
 								},
 							},
 						},
-						map[string]interface{}{
-							"key": "3",
-							"value": map[string]interface{}{
-								"einride.avro.example.v1.ExampleMap.Nested": map[string]interface{}{
-									"string_to_string": []interface{}{
-										map[string]interface{}{
-											"key":   "3",
-											"value": "c",
-										},
-										map[string]interface{}{
-											"key":   "4",
-											"value": "d",
-										},
-									},
-								},
+					},
+					"string_to_enum": map[string]interface{}{
+						"array": []interface{}{
+							map[string]interface{}{
+								"key":   map[string]interface{}{"string": "0"},
+								"value": map[string]interface{}{"einride.avro.example.v1.ExampleMap.Enum": "ENUM_UNSPECIFIED"},
+							},
+							map[string]interface{}{
+								"key":   map[string]interface{}{"string": "1"},
+								"value": map[string]interface{}{"einride.avro.example.v1.ExampleMap.Enum": "ENUM_VALUE1"},
 							},
 						},
 					},
-					"string_to_enum": []interface{}{
-						map[string]interface{}{
-							"key":   "0",
-							"value": "ENUM_UNSPECIFIED",
-						},
-						map[string]interface{}{
-							"key":   "1",
-							"value": "ENUM_VALUE1",
-						},
-					},
-					"int32_to_string": []interface{}{
-						map[string]interface{}{
-							"key":   int32(1),
-							"value": "a",
-						},
-						map[string]interface{}{
-							"key":   int32(2),
-							"value": "b",
+					"int32_to_string": map[string]interface{}{
+						"array": []interface{}{
+							map[string]interface{}{
+								"key":   map[string]interface{}{"int": int32(1)},
+								"value": map[string]interface{}{"string": "a"},
+							},
+							map[string]interface{}{
+								"key":   map[string]interface{}{"int": int32(2)},
+								"value": map[string]interface{}{"string": "b"},
+							},
 						},
 					},
-					"int64_to_string": []interface{}{
-						map[string]interface{}{
-							"key":   int64(1),
-							"value": "a",
-						},
-						map[string]interface{}{
-							"key":   int64(2),
-							"value": "b",
-						},
-					},
-					"uint32_to_string": []interface{}{
-						map[string]interface{}{
-							"key":   int32(1),
-							"value": "a",
-						},
-						map[string]interface{}{
-							"key":   int32(2),
-							"value": "b",
+					"int64_to_string": map[string]interface{}{
+						"array": []interface{}{
+							map[string]interface{}{
+								"key":   map[string]interface{}{"long": int64(1)},
+								"value": map[string]interface{}{"string": "a"},
+							},
+							map[string]interface{}{
+								"key":   map[string]interface{}{"long": int64(2)},
+								"value": map[string]interface{}{"string": "b"},
+							},
 						},
 					},
-					"bool_to_string": []interface{}{
-						map[string]interface{}{
-							"key":   false,
-							"value": "b",
-						},
-						map[string]interface{}{
-							"key":   true,
-							"value": "a",
+					"uint32_to_string": map[string]interface{}{
+						"array": []interface{}{
+							map[string]interface{}{
+								"key":   map[string]interface{}{"int": int32(1)},
+								"value": map[string]interface{}{"string": "a"},
+							},
+							map[string]interface{}{
+								"key":   map[string]interface{}{"int": int32(2)},
+								"value": map[string]interface{}{"string": "b"},
+							},
 						},
 					},
-					"string_to_float_value": []interface{}{
-						map[string]interface{}{
-							"key":   "1",
-							"value": nil,
+					"bool_to_string": map[string]interface{}{
+						"array": []interface{}{
+							map[string]interface{}{
+								"key":   map[string]interface{}{"boolean": false},
+								"value": map[string]interface{}{"string": "b"},
+							},
+							map[string]interface{}{
+								"key":   map[string]interface{}{"boolean": true},
+								"value": map[string]interface{}{"string": "a"},
+							},
 						},
-						map[string]interface{}{
-							"key":   "2",
-							"value": map[string]interface{}{"float": float32(2)},
+					},
+					"string_to_float_value": map[string]interface{}{
+						"array": []interface{}{
+							map[string]interface{}{
+								"key":   map[string]interface{}{"string": "1"},
+								"value": nil,
+							},
+							map[string]interface{}{
+								"key":   map[string]interface{}{"string": "2"},
+								"value": map[string]interface{}{"float": float32(2)},
+							},
 						},
 					},
 				},

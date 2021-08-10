@@ -24,23 +24,24 @@ Avro schema inference for arbitrary protobuf messages.
 
 ```go
 func ExampleInferSchema() {
-    msg := &library.Book{}
-    schema, err := protoavro.InferSchema(msg.ProtoReflect().Descriptor())
-    if err != nil {
-        panic(err)
-    }
-    expected := avro.Nullable(avro.Record{
-        Type:      avro.RecordType,
-        Name:      "Book",
-        Namespace: "google.example.library.v1",
-        Fields: []avro.Field{
-            {Name: "name", Type: avro.String()},
-            {Name: "author", Type: avro.String()},
-            {Name: "title", Type: avro.String()},
-            {Name: "read", Type: avro.Boolean()},
-        },
-    })
-    fmt.Println(cmp.Equal(expected, schema))
+	msg := &library.Book{}
+	schema, err := protoavro.InferSchema(msg.ProtoReflect().Descriptor())
+	if err != nil {
+		panic(err)
+	}
+	expected := avro.Nullable(avro.Record{
+		Type:      avro.RecordType,
+		Name:      "Book",
+		Namespace: "google.example.library.v1",
+		Fields: []avro.Field{
+			{Name: "name", Type: avro.Nullable(avro.String())},
+			{Name: "author", Type: avro.Nullable(avro.String())},
+			{Name: "title", Type: avro.Nullable(avro.String())},
+			{Name: "read", Type: avro.Nullable(avro.Boolean())},
+		},
+	})
+	fmt.Println(cmp.Equal(expected, schema))
+	// Output: true
 }
 ```
 
@@ -99,7 +100,7 @@ func ExampleUnmarshaler() {
 
 ### Mapping
 
-**Messages** are mapped as nullable records in Avro. Fields will have the same casing as in the protobuf descriptor.
+**Messages** are mapped as nullable records in Avro. All fields will be nullable. Fields will have the same casing as in the protobuf descriptor.
 
 **One of**s are mapped to nullable fields in Avro, where at most one field will be set at a time.
 

@@ -24,10 +24,10 @@ func TestInferSchema(t *testing.T) {
 				Name:      "Book",
 				Namespace: "google.example.library.v1",
 				Fields: []avro.Field{
-					{Name: "name", Type: avro.String()},
-					{Name: "author", Type: avro.String()},
-					{Name: "title", Type: avro.String()},
-					{Name: "read", Type: avro.Boolean()},
+					{Name: "name", Type: avro.Nullable(avro.String())},
+					{Name: "author", Type: avro.Nullable(avro.String())},
+					{Name: "title", Type: avro.Nullable(avro.String())},
+					{Name: "read", Type: avro.Nullable(avro.Boolean())},
 				},
 			}),
 		},
@@ -46,10 +46,10 @@ func TestInferSchema(t *testing.T) {
 							Name:      "Book",
 							Namespace: "google.example.library.v1",
 							Fields: []avro.Field{
-								{Name: "name", Type: avro.String()},
-								{Name: "author", Type: avro.String()},
-								{Name: "title", Type: avro.String()},
-								{Name: "read", Type: avro.Boolean()},
+								{Name: "name", Type: avro.Nullable(avro.String())},
+								{Name: "author", Type: avro.Nullable(avro.String())},
+								{Name: "title", Type: avro.Nullable(avro.String())},
+								{Name: "read", Type: avro.Nullable(avro.Boolean())},
 							},
 						}),
 					},
@@ -62,10 +62,10 @@ func TestInferSchema(t *testing.T) {
 							Fields: []avro.Field{
 								{
 									Name: "paths",
-									Type: avro.Array{
+									Type: avro.Nullable(avro.Array{
 										Type:  avro.ArrayType,
-										Items: avro.String(),
-									},
+										Items: avro.Nullable(avro.String()),
+									}),
 								},
 							},
 						}),
@@ -100,7 +100,7 @@ func TestInferSchema(t *testing.T) {
 				Fields: []avro.Field{
 					{
 						Name: "bytes",
-						Type: avro.Bytes(),
+						Type: avro.Nullable(avro.Bytes()),
 					},
 				},
 			}),
@@ -132,13 +132,13 @@ func TestInferSchema(t *testing.T) {
 							Name:      "DateTime",
 							Namespace: "google.type",
 							Fields: []avro.Field{
-								{Name: "year", Type: avro.Integer()},
-								{Name: "month", Type: avro.Integer()},
-								{Name: "day", Type: avro.Integer()},
-								{Name: "hours", Type: avro.Integer()},
-								{Name: "minutes", Type: avro.Integer()},
-								{Name: "seconds", Type: avro.Integer()},
-								{Name: "nanos", Type: avro.Integer()},
+								{Name: "year", Type: avro.Nullable(avro.Integer())},
+								{Name: "month", Type: avro.Nullable(avro.Integer())},
+								{Name: "day", Type: avro.Nullable(avro.Integer())},
+								{Name: "hours", Type: avro.Nullable(avro.Integer())},
+								{Name: "minutes", Type: avro.Nullable(avro.Integer())},
+								{Name: "seconds", Type: avro.Nullable(avro.Integer())},
+								{Name: "nanos", Type: avro.Nullable(avro.Integer())},
 								{
 									Name: "utc_offset",
 									Doc:  "At most one will be set:\n* utc_offset\n* time_zone",
@@ -152,8 +152,8 @@ func TestInferSchema(t *testing.T) {
 										Name:      "TimeZone",
 										Namespace: "google.type",
 										Fields: []avro.Field{
-											{Name: "id", Type: avro.String()},
-											{Name: "version", Type: avro.String()},
+											{Name: "id", Type: avro.Nullable(avro.String())},
+											{Name: "version", Type: avro.Nullable(avro.String())},
 										},
 									}),
 								},
@@ -185,7 +185,7 @@ func TestInferSchema(t *testing.T) {
 				Fields: []avro.Field{
 					{
 						Name: "enum_value",
-						Type: avro.Enum{
+						Type: avro.Nullable(avro.Enum{
 							Type:      avro.EnumType,
 							Name:      "Enum",
 							Namespace: "einride.avro.example.v1.ExampleEnum",
@@ -194,7 +194,7 @@ func TestInferSchema(t *testing.T) {
 								"ENUM_VALUE1",
 								"ENUM_VALUE2",
 							},
-						},
+						}),
 					},
 				},
 			}),
@@ -209,23 +209,23 @@ func TestInferSchema(t *testing.T) {
 				Fields: []avro.Field{
 					{
 						Name: "int64_list",
-						Type: avro.Array{
+						Type: avro.Nullable(avro.Array{
 							Type:  avro.ArrayType,
-							Items: avro.Long(),
-						},
+							Items: avro.Nullable(avro.Long()),
+						}),
 					},
 					{
 						Name: "string_list",
-						Type: avro.Array{
+						Type: avro.Nullable(avro.Array{
 							Type:  avro.ArrayType,
-							Items: avro.String(),
-						},
+							Items: avro.Nullable(avro.String()),
+						}),
 					},
 					{
 						Name: "enum_list",
-						Type: avro.Array{
+						Type: avro.Nullable(avro.Array{
 							Type: avro.ArrayType,
-							Items: avro.Enum{
+							Items: avro.Nullable(avro.Enum{
 								Type:      avro.EnumType,
 								Name:      "Enum",
 								Namespace: "einride.avro.example.v1.ExampleList",
@@ -234,12 +234,12 @@ func TestInferSchema(t *testing.T) {
 									"ENUM_VALUE1",
 									"ENUM_VALUE2",
 								},
-							},
-						},
+							}),
+						}),
 					},
 					{
 						Name: "nested_list",
-						Type: avro.Array{
+						Type: avro.Nullable(avro.Array{
 							Type: avro.ArrayType,
 							Items: avro.Nullable(avro.Record{
 								Type:      avro.RecordType,
@@ -248,21 +248,21 @@ func TestInferSchema(t *testing.T) {
 								Fields: []avro.Field{
 									{
 										Name: "string_list",
-										Type: avro.Array{
+										Type: avro.Nullable(avro.Array{
 											Type:  avro.ArrayType,
-											Items: avro.String(),
-										},
+											Items: avro.Nullable(avro.String()),
+										}),
 									},
 								},
 							}),
-						},
+						}),
 					},
 					{
 						Name: "float_value_list",
-						Type: avro.Array{
+						Type: avro.Nullable(avro.Array{
 							Type:  avro.ArrayType,
 							Items: avro.Nullable(avro.Float()),
-						},
+						}),
 					},
 				},
 			}),
@@ -277,29 +277,29 @@ func TestInferSchema(t *testing.T) {
 				Fields: []avro.Field{
 					{
 						Name: "string_to_string",
-						Type: avro.Array{
+						Type: avro.Nullable(avro.Array{
 							Type: avro.ArrayType,
 							Items: avro.Record{
 								Type:      avro.RecordType,
 								Name:      "StringToStringEntry",
 								Namespace: "einride.avro.example.v1.ExampleMap",
 								Fields: []avro.Field{
-									{Name: "key", Type: avro.String()},
-									{Name: "value", Type: avro.String()},
+									{Name: "key", Type: avro.Nullable(avro.String())},
+									{Name: "value", Type: avro.Nullable(avro.String())},
 								},
 							},
-						},
+						}),
 					},
 					{
 						Name: "string_to_nested",
-						Type: avro.Array{
+						Type: avro.Nullable(avro.Array{
 							Type: avro.ArrayType,
 							Items: avro.Record{
 								Type:      avro.RecordType,
 								Name:      "StringToNestedEntry",
 								Namespace: "einride.avro.example.v1.ExampleMap",
 								Fields: []avro.Field{
-									{Name: "key", Type: avro.String()},
+									{Name: "key", Type: avro.Nullable(avro.String())},
 									{
 										Name: "value",
 										Type: avro.Nullable(avro.Record{
@@ -309,39 +309,39 @@ func TestInferSchema(t *testing.T) {
 											Fields: []avro.Field{
 												{
 													Name: "string_to_string",
-													Type: avro.Array{
+													Type: avro.Nullable(avro.Array{
 														Type: avro.ArrayType,
 														Items: avro.Record{
 															Type:      avro.RecordType,
 															Name:      "StringToStringEntry",
 															Namespace: "einride.avro.example.v1.ExampleMap.Nested",
 															Fields: []avro.Field{
-																{Name: "key", Type: avro.String()},
-																{Name: "value", Type: avro.String()},
+																{Name: "key", Type: avro.Nullable(avro.String())},
+																{Name: "value", Type: avro.Nullable(avro.String())},
 															},
 														},
-													},
+													}),
 												},
 											},
 										}),
 									},
 								},
 							},
-						},
+						}),
 					},
 					{
 						Name: "string_to_enum",
-						Type: avro.Array{
+						Type: avro.Nullable(avro.Array{
 							Type: avro.ArrayType,
 							Items: avro.Record{
 								Type:      avro.RecordType,
 								Name:      "StringToEnumEntry",
 								Namespace: "einride.avro.example.v1.ExampleMap",
 								Fields: []avro.Field{
-									{Name: "key", Type: avro.String()},
+									{Name: "key", Type: avro.Nullable(avro.String())},
 									{
 										Name: "value",
-										Type: avro.Enum{
+										Type: avro.Nullable(avro.Enum{
 											Type:      avro.EnumType,
 											Name:      "Enum",
 											Namespace: "einride.avro.example.v1.ExampleMap",
@@ -350,86 +350,86 @@ func TestInferSchema(t *testing.T) {
 												"ENUM_VALUE1",
 												"ENUM_VALUE2",
 											},
-										},
+										}),
 									},
 								},
 							},
-						},
+						}),
 					},
 					{
 						Name: "int32_to_string",
-						Type: avro.Array{
+						Type: avro.Nullable(avro.Array{
 							Type: avro.ArrayType,
 							Items: avro.Record{
 								Type:      avro.RecordType,
 								Name:      "Int32ToStringEntry",
 								Namespace: "einride.avro.example.v1.ExampleMap",
 								Fields: []avro.Field{
-									{Name: "key", Type: avro.Integer()},
-									{Name: "value", Type: avro.String()},
+									{Name: "key", Type: avro.Nullable(avro.Integer())},
+									{Name: "value", Type: avro.Nullable(avro.String())},
 								},
 							},
-						},
+						}),
 					},
 					{
 						Name: "int64_to_string",
-						Type: avro.Array{
+						Type: avro.Nullable(avro.Array{
 							Type: avro.ArrayType,
 							Items: avro.Record{
 								Type:      avro.RecordType,
 								Name:      "Int64ToStringEntry",
 								Namespace: "einride.avro.example.v1.ExampleMap",
 								Fields: []avro.Field{
-									{Name: "key", Type: avro.Long()},
-									{Name: "value", Type: avro.String()},
+									{Name: "key", Type: avro.Nullable(avro.Long())},
+									{Name: "value", Type: avro.Nullable(avro.String())},
 								},
 							},
-						},
+						}),
 					},
 					{
 						Name: "uint32_to_string",
-						Type: avro.Array{
+						Type: avro.Nullable(avro.Array{
 							Type: avro.ArrayType,
 							Items: avro.Record{
 								Type:      avro.RecordType,
 								Name:      "Uint32ToStringEntry",
 								Namespace: "einride.avro.example.v1.ExampleMap",
 								Fields: []avro.Field{
-									{Name: "key", Type: avro.Integer()},
-									{Name: "value", Type: avro.String()},
+									{Name: "key", Type: avro.Nullable(avro.Integer())},
+									{Name: "value", Type: avro.Nullable(avro.String())},
 								},
 							},
-						},
+						}),
 					},
 					{
 						Name: "bool_to_string",
-						Type: avro.Array{
+						Type: avro.Nullable(avro.Array{
 							Type: avro.ArrayType,
 							Items: avro.Record{
 								Type:      avro.RecordType,
 								Name:      "BoolToStringEntry",
 								Namespace: "einride.avro.example.v1.ExampleMap",
 								Fields: []avro.Field{
-									{Name: "key", Type: avro.Boolean()},
-									{Name: "value", Type: avro.String()},
+									{Name: "key", Type: avro.Nullable(avro.Boolean())},
+									{Name: "value", Type: avro.Nullable(avro.String())},
 								},
 							},
-						},
+						}),
 					},
 					{
 						Name: "string_to_float_value",
-						Type: avro.Array{
+						Type: avro.Nullable(avro.Array{
 							Type: avro.ArrayType,
 							Items: avro.Record{
 								Type:      avro.RecordType,
 								Name:      "StringToFloatValueEntry",
 								Namespace: "einride.avro.example.v1.ExampleMap",
 								Fields: []avro.Field{
-									{Name: "key", Type: avro.String()},
+									{Name: "key", Type: avro.Nullable(avro.String())},
 									{Name: "value", Type: avro.Nullable(avro.Float())},
 								},
 							},
-						},
+						}),
 					},
 				},
 			}),
@@ -470,7 +470,7 @@ func TestInferSchema(t *testing.T) {
 							Name:      "Message",
 							Namespace: "einride.avro.example.v1.ExampleOneof",
 							Fields: []avro.Field{
-								{Name: "string_value", Type: avro.String()},
+								{Name: "string_value", Type: avro.Nullable(avro.String())},
 							},
 						}),
 					},
