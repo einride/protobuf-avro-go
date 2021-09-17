@@ -7,19 +7,86 @@ import (
 	"go.einride.tech/protobuf-avro/avro"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
+type SchemaOptions struct {
+	ExtraFields []SchemaExtraField
+}
+
+type SchemaExtraField struct {
+	FieldName string
+	Descriptor protoreflect.MessageDescriptor
+}
+
+func (s SchemaOptions) InferSchema(desc protoreflect.MessageDescriptor) (avro.Schema, error) {
+	return newSchemaInferrer(s).topLevelInferMessageSchema(desc)
+}
 
 // InferSchema returns the Avro schema for the protobuf message descriptor.
 func InferSchema(desc protoreflect.MessageDescriptor) (avro.Schema, error) {
-	return newSchemaInferrer().inferMessageSchema(desc)
+	return SchemaOptions{}.InferSchema(desc)
 }
 
 type schemaInferrer struct {
+	options SchemaOptions
 	seen map[protoreflect.FullName]struct{}
 }
 
-func newSchemaInferrer() schemaInferrer {
-	return schemaInferrer{seen: make(map[protoreflect.FullName]struct{})}
+func newSchemaInferrer(options SchemaOptions) schemaInferrer {
+	return schemaInferrer{
+		seen: make(map[protoreflect.FullName]struct{}),
+		options: options,
+	}
 }
+
+func (s schemaInferrer) topLevelInferMessageSchema(message protoreflect.MessageDescriptor) (avro.Schema, error) {
+	if isWKT(message.FullName()) {
+		return schemaWKT(message)
+	}
+
+	if _, ok := s.seen[message.FullName()]; ok {
+		return avro.Nullable(avro.Reference(message.FullName())), nil
+	}
+	s.seen[message.FullName()] = struct{}{}
+	doc := message.ParentFile().SourceLocations().ByDescriptor(message).LeadingComments
+	record := avro.Record{
+		Type:      avro.RecordType,
+		Doc:       doc,
+		Name:      string(message.Name()),
+		Namespace: namespace(message),
+		Fields:    make([]avro.Field, 0, message.Fields().Len()),
+	}
+	for i := 0; i < message.Fields().Len(); i++ {
+		field := message.Fields().Get(i)
+		fieldSchema, err := s.inferField(field)
+		if err != nil {
+			return nil, err
+		}
+
+		fieldSchema.Type = avro.Nullable(fieldSchema.Type)
+		record.Fields = append(
+			record.Fields,
+			fieldSchema,
+		)
+	}
+	for _, field := range s.options.ExtraFields {
+		fieldSchema, err := s.inferMessageSchema(field.Descriptor)
+		if err != nil {
+			return nil, err
+		}
+		record.Fields = append(
+			record.Fields,
+			avro.Field{
+				Name: field.FieldName,
+				Doc:  doc,
+				Type: fieldSchema,
+			},
+		)
+	}
+	if message.IsMapEntry() {
+		return record, nil
+	}
+	return avro.Nullable(record), nil
+}
+
 
 func (s schemaInferrer) inferMessageSchema(message protoreflect.MessageDescriptor) (avro.Schema, error) {
 	if isWKT(message.FullName()) {

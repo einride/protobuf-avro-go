@@ -6,8 +6,60 @@ import (
 )
 
 // encodeJSON returns the Avro JSON encoding of message.
-func encodeJSON(message proto.Message) (interface{}, error) {
-	return messageJSON(message.ProtoReflect())
+func encodeJSON(message proto.Message, options MarshalOptions) (interface{}, error) {
+	return topLevelMessageJSON(message.ProtoReflect(), options)
+}
+
+// topLevelMessageJSON encodes the proto message including potential extra fields from MarshalOptions.
+// For nested fields in the proto message it will recursively call messageJSON function to convert
+// to the avro format.
+func topLevelMessageJSON(message protoreflect.Message, options MarshalOptions) (interface{}, error) {
+	if !message.IsValid() {
+		return nil, nil
+	}
+	if isWKT(message.Descriptor().FullName()) && len(options.ExtraFields) == 0{
+		value, err := encodeWKT(message)
+		if err != nil {
+			return nil, err
+		}
+		return value, nil
+	}
+	desc := message.Descriptor()
+	record := make(map[string]interface{}, desc.Fields().Len() + len(options.ExtraFields))
+	for i := 0; i < desc.Fields().Len(); i++ {
+		field := desc.Fields().Get(i)
+		if field.ContainingOneof() != nil {
+			if !message.Has(field) {
+				// dont populate scalar fields belonging to
+				// a oneof (.Get returns the default value)
+				record[string(field.Name())] = nil
+			} else {
+				value := message.Get(field)
+				jsonValue, err := fieldJSON(field, value)
+				if err != nil {
+					return nil, err
+				}
+				record[string(field.Name())] = jsonValue
+			}
+			continue
+		}
+		value := message.Get(field)
+		jsonValue, err := fieldJSON(field, value)
+		if err != nil {
+			return nil, err
+		}
+		record[string(field.Name())] = jsonValue
+	}
+	for _, field := range options.ExtraFields {
+		jsonValue, err := messageJSON(field.Message.ProtoReflect())
+		if err != nil {
+			return nil, err
+		}
+		record[field.FieldName] = jsonValue
+	}
+	return map[string]interface{}{
+		string(desc.FullName()): record,
+	}, nil
 }
 
 func unionValue(key string, value interface{}) map[string]interface{} {
@@ -16,6 +68,9 @@ func unionValue(key string, value interface{}) map[string]interface{} {
 	}
 }
 
+// messageJSON encodes a proto message to the binary avro format.
+// It complies to the avro nullability by returning it on the format of map[string]interface{}.
+// For nested fields in the proto message it will recursively call messageJSON function.
 func messageJSON(message protoreflect.Message) (interface{}, error) {
 	if !message.IsValid() {
 		return nil, nil

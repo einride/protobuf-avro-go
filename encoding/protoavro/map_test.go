@@ -175,7 +175,7 @@ func Test_MapSchema(t *testing.T) {
 	} {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			schema, err := newSchemaInferrer().inferMapSchema(tt.msg.ProtoReflect().Descriptor().Fields().ByName(tt.fieldName))
+			schema, err := newSchemaInferrer(SchemaOptions{}).inferMapSchema(tt.msg.ProtoReflect().Descriptor().Fields().ByName(tt.fieldName))
 			assert.NilError(t, err)
 			assert.DeepEqual(t, schema, tt.expected)
 		})
