@@ -70,7 +70,7 @@ func Test_MarshalUnmarshal_WithOptions(t *testing.T) {
 	var b bytes.Buffer
 	shelf := &library.Shelf{}
 	options := &protoavro.MarshalOptions{
-		ExtraFields: []protoavro.MarshalExtraField{
+		ExtraFields: []protoavro.ExtraField{
 			{
 				FieldName: "shelf",
 				Message: shelf,
@@ -90,9 +90,7 @@ func Test_MarshalUnmarshal_WithOptions(t *testing.T) {
 	got := make([]*library.Book, 0, 2)
 	for unmarshaler.Scan() {
 		var msg library.Book
-		assert.NilError(t, unmarshaler.UnmarshalWithOptions(&msg, &protoavro.UnmarshalOptions{
-			MarshalOptions: options,
-		}))
+		assert.NilError(t, unmarshaler.UnmarshalWithOptions(&msg, options.ConvertToUnmarshalOptions()))
 		got = append(got, &msg)
 	}
 

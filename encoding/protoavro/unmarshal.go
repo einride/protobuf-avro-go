@@ -42,7 +42,7 @@ func (m *Unmarshaler) Unmarshal(message proto.Message) error {
 }
 
 type UnmarshalOptions struct {
-	MarshalOptions *MarshalOptions
+	ExtraFields []ExtraField
 	TrashCan []proto.Message
 }
 // Unmarshal consumes one message from the reader and places it in message.

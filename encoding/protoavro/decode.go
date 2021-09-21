@@ -169,7 +169,7 @@ func findField(desc protoreflect.MessageDescriptor, name string, options *Unmars
 	if fd := desc.Fields().ByTextName(name); fd != nil {
 		return fd, true
 	}
-	for _, extraField := range options.MarshalOptions.ExtraFields {
+	for _, extraField := range options.ExtraFields {
 		if extraField.FieldName == name {
 			return nil,true
 		}

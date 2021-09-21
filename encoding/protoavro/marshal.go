@@ -11,10 +11,10 @@ import (
 )
 
 type MarshalOptions struct {
-	ExtraFields []MarshalExtraField
+	ExtraFields []ExtraField
 }
 
-type MarshalExtraField struct {
+type ExtraField struct {
 	FieldName string
 	Message proto.Message
 }
@@ -28,6 +28,13 @@ func (o MarshalOptions) convertToSchemaOptions() SchemaOptions {
 		}
 	}
 	return SchemaOptions{ExtraFields: extraFields}
+}
+
+func (o MarshalOptions) ConvertToUnmarshalOptions() *UnmarshalOptions {
+	return &UnmarshalOptions{
+		ExtraFields: o.ExtraFields,
+		TrashCan: make([]proto.Message, 0),
+	}
 }
 
 // NewMarshaler returns a new marshaler that writes protobuf messages to writer in
