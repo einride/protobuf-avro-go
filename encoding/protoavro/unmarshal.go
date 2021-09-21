@@ -35,8 +35,25 @@ func (m *Unmarshaler) Unmarshal(message proto.Message) error {
 	if err != nil {
 		return fmt.Errorf("read message: %w", err)
 	}
-	if err := decodeJSON(data, message); err != nil {
+	if err := decodeJSON(data, message, &UnmarshalOptions{}); err != nil {
 		return fmt.Errorf("decode message: %w", err)
 	}
 	return nil
 }
+
+type UnmarshalOptions struct {
+	MarshalOptions *MarshalOptions
+	TrashCan []proto.Message
+}
+// Unmarshal consumes one message from the reader and places it in message.
+func (m *Unmarshaler) UnmarshalWithOptions(message proto.Message, options *UnmarshalOptions) error {
+	data, err := m.r.Read()
+	if err != nil {
+		return fmt.Errorf("read message: %w", err)
+	}
+	if err := decodeJSON(data, message, options); err != nil {
+		return fmt.Errorf("decode message: %w", err)
+	}
+	return nil
+}
+

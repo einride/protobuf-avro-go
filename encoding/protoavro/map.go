@@ -55,15 +55,15 @@ func encodeMap(field protoreflect.FieldDescriptor, m protoreflect.Map) (interfac
 	return unionValue("array", entries), nil
 }
 
-func decodeMap(data interface{}, f protoreflect.FieldDescriptor, mp protoreflect.Map) error {
+func decodeMap(data interface{}, f protoreflect.FieldDescriptor, mp protoreflect.Map, options *UnmarshalOptions) error {
 	list, err := decodeListLike(data, "array")
 	if err != nil {
 		return err
 	}
-	return decodeMapEntries(list, f, mp)
+	return decodeMapEntries(list, f, mp, options)
 }
 
-func decodeMapEntries(data []interface{}, f protoreflect.FieldDescriptor, mp protoreflect.Map) error {
+func decodeMapEntries(data []interface{}, f protoreflect.FieldDescriptor, mp protoreflect.Map, options *UnmarshalOptions) error {
 	for _, el := range data {
 		entry, ok := el.(map[string]interface{})
 		if !ok {
@@ -77,11 +77,11 @@ func decodeMapEntries(data []interface{}, f protoreflect.FieldDescriptor, mp pro
 		if !ok {
 			return fmt.Errorf("missing 'value' in map entry for '%s'", f.Name())
 		}
-		keyValue, err := decodeFieldKind(keyData, protoreflect.Value{}, f.MapKey())
+		keyValue, err := decodeFieldKind(keyData, protoreflect.Value{}, f.MapKey(), options)
 		if err != nil {
 			return err
 		}
-		valueValue, err := decodeFieldKind(valueData, mp.NewValue(), f.MapValue())
+		valueValue, err := decodeFieldKind(valueData, mp.NewValue(), f.MapValue(), options)
 		if err != nil {
 			return err
 		}

@@ -9,11 +9,11 @@ import (
 
 // decodeJSON decodes the JSON encoded avro data and places the
 // result in msg.
-func decodeJSON(data interface{}, msg proto.Message) error {
-	return decodeMessage(data, msg.ProtoReflect())
+func decodeJSON(data interface{}, msg proto.Message, options *UnmarshalOptions) error {
+	return decodeMessage(data, msg.ProtoReflect(), options)
 }
 
-func decodeMessage(data interface{}, msg protoreflect.Message) error {
+func decodeMessage(data interface{}, msg protoreflect.Message, options *UnmarshalOptions) error {
 	if data == nil {
 		return nil
 	}
@@ -28,28 +28,31 @@ func decodeMessage(data interface{}, msg protoreflect.Message) error {
 	// unwrap union
 	desc := msg.Descriptor()
 	if msgData, ok := d[string(desc.FullName())]; len(d) == 1 && ok {
-		return decodeMessage(msgData, msg)
+		return decodeMessage(msgData, msg, options)
 	}
 	for fieldName, fieldValue := range d {
-		fd, ok := findField(desc, fieldName)
+		fd, ok := findField(desc, fieldName, options)
 		if !ok {
 			return fmt.Errorf("unexpected field %s", fieldName)
 		}
-		if err := decodeField(fieldValue, msg, fd); err != nil {
+		if fd == nil {
+			continue
+		}
+		if err := decodeField(fieldValue, msg, fd, options); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func decodeField(data interface{}, val protoreflect.Message, f protoreflect.FieldDescriptor) error {
+func decodeField(data interface{}, val protoreflect.Message, f protoreflect.FieldDescriptor, options *UnmarshalOptions) error {
 	if data == nil {
 		return nil
 	}
 	switch {
 	case f.IsMap():
 		mp := val.NewField(f).Map()
-		if err := decodeMap(data, f, mp); err != nil {
+		if err := decodeMap(data, f, mp, options); err != nil {
 			return err
 		}
 		val.Set(f, protoreflect.ValueOfMap(mp))
@@ -65,7 +68,7 @@ func decodeField(data interface{}, val protoreflect.Message, f protoreflect.Fiel
 				list.Append(list.NewElement())
 				continue
 			}
-			fieldValue, err := decodeFieldKind(el, list.NewElement(), f)
+			fieldValue, err := decodeFieldKind(el, list.NewElement(), f, options)
 			if err != nil {
 				return err
 			}
@@ -74,7 +77,7 @@ func decodeField(data interface{}, val protoreflect.Message, f protoreflect.Fiel
 		val.Set(f, protoreflect.ValueOfList(list))
 		return nil
 	default:
-		fieldValue, err := decodeFieldKind(data, val.NewField(f), f)
+		fieldValue, err := decodeFieldKind(data, val.NewField(f), f, options)
 		if err != nil {
 			return err
 		}
@@ -83,10 +86,10 @@ func decodeField(data interface{}, val protoreflect.Message, f protoreflect.Fiel
 	return nil
 }
 
-func decodeFieldKind(data interface{}, mutable protoreflect.Value, f protoreflect.FieldDescriptor) (protoreflect.Value, error) {
+func decodeFieldKind(data interface{}, mutable protoreflect.Value, f protoreflect.FieldDescriptor, options *UnmarshalOptions) (protoreflect.Value, error) {
 	switch f.Kind() {
 	case protoreflect.MessageKind, protoreflect.GroupKind:
-		if err := decodeMessage(data, mutable.Message()); err != nil {
+		if err := decodeMessage(data, mutable.Message(), options); err != nil {
 			return protoreflect.Value{}, err
 		}
 		return mutable, nil
@@ -159,12 +162,17 @@ func decodeFieldKind(data interface{}, mutable protoreflect.Value, f protoreflec
 	return protoreflect.Value{}, fmt.Errorf("unexpected kind %s", f.Kind())
 }
 
-func findField(desc protoreflect.MessageDescriptor, name string) (protoreflect.FieldDescriptor, bool) {
+func findField(desc protoreflect.MessageDescriptor, name string, options *UnmarshalOptions) (protoreflect.FieldDescriptor, bool) {
 	if fd := desc.Fields().ByJSONName(name); fd != nil {
 		return fd, true
 	}
 	if fd := desc.Fields().ByTextName(name); fd != nil {
 		return fd, true
+	}
+	for _, extraField := range options.MarshalOptions.ExtraFields {
+		if extraField.FieldName == name {
+			return nil,true
+		}
 	}
 	return nil, false
 }

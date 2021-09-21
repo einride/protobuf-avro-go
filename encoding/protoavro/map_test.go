@@ -320,7 +320,7 @@ func Test_MapDecode(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			desc := tt.msg.ProtoReflect().Descriptor().Fields().ByName(tt.fieldName)
 			val := tt.msg.ProtoReflect().Mutable(desc)
-			err := decodeMap(tt.data, desc, val.Map())
+			err := decodeMap(tt.data, desc, val.Map(), &UnmarshalOptions{})
 			if tt.expectErr != "" {
 				assert.ErrorContains(t, err, tt.expectErr)
 				return

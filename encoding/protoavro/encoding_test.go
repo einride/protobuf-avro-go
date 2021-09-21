@@ -586,7 +586,7 @@ func Test_JSON(t *testing.T) {
 
 			next := proto.Clone(tt.msg)
 			proto.Reset(next)
-			assert.NilError(t, decodeJSON(got, next))
+			assert.NilError(t, decodeJSON(got, next, &UnmarshalOptions{}))
 			assert.DeepEqual(t, tt.msg, next, protocmp.Transform())
 		})
 	}

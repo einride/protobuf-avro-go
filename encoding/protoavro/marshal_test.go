@@ -53,6 +53,52 @@ func Test_MarshalUnmarshal(t *testing.T) {
 	assert.DeepEqual(t, msgs, got, protocmp.Transform())
 }
 
+func Test_MarshalUnmarshal_WithOptions(t *testing.T) {
+	msgs := []*library.Book{
+		{
+			Name:   "shelves/1/books/1",
+			Title:  "Harry Potter",
+			Author: "J. K. Rowling",
+		},
+		{
+			Name:   "shelves/1/books/2",
+			Title:  "Lord of the Rings",
+			Author: "J. R. R. Tolkien",
+		},
+	}
+
+	var b bytes.Buffer
+	shelf := &library.Shelf{}
+	options := &protoavro.MarshalOptions{
+		ExtraFields: []protoavro.MarshalExtraField{
+			{
+				FieldName: "shelf",
+				Message: shelf,
+			},
+		},
+	}
+	// marshal messages
+	marshaller, err := protoavro.NewMarshalerWithOptions(msgs[0].ProtoReflect().Descriptor(), &b, options)
+	assert.NilError(t, err)
+	for _, msg := range msgs {
+		assert.NilError(t, marshaller.Marshal(msg))
+	}
+
+	// unmarshal messages
+	unmarshaler, err := protoavro.NewUnmarshaler(&b)
+	assert.NilError(t, err)
+	got := make([]*library.Book, 0, 2)
+	for unmarshaler.Scan() {
+		var msg library.Book
+		assert.NilError(t, unmarshaler.UnmarshalWithOptions(&msg, &protoavro.UnmarshalOptions{
+			MarshalOptions: options,
+		}))
+		got = append(got, &msg)
+	}
+
+	assert.DeepEqual(t, msgs, got, protocmp.Transform())
+}
+
 func Test_MarshalSymmetric(t *testing.T) {
 	// when `goavro` decodes a file, it will not read back exactly what was
 	// written. For example timestamps are returned as `time.Time`. These
