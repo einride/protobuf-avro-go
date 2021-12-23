@@ -4,3 +4,4 @@ plugins:
   - name: go
     out: internal/examples/proto/gen
     opt: module=go.einride.tech/protobuf-avro/internal/examples/proto/gen
+    path: ./build/protoc-gen-go
