@@ -1,7 +1,7 @@
-version: v1beta1
+version: v1
 
 plugins:
   - name: go
-    out: internal/examples/proto/gen
+    out: gen
     opt: module=go.einride.tech/protobuf-avro/internal/examples/proto/gen
-    path: ./build/protoc-gen-go
+    path: ../../../build/protoc-gen-go
