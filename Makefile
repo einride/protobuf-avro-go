@@ -41,10 +41,10 @@ go-mod-tidy:
 .PHONY: buf-lint
 buf-lint: $(buf)
 	$(info [$@] linting protobuf schemas...)
-	@$(buf) lint
+	@cd internal/examples/proto && $(buf) lint
 
 .PHONY: buf-generate
 buf-generate: $(buf) build/protoc-gen-go
 	$(info [$@] generating protobuf stubs...)
 	@rm -rf internal/examples/proto/gen
-	@$(buf) generate --path internal/examples/proto/src/einride
+	@cd internal/examples/proto && $(buf) generate --path einride
