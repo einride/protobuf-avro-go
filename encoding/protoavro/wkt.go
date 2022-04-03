@@ -241,7 +241,7 @@ func decodeWrapper(w string, v map[string]interface{}) (proto.Message, error) {
 		if err != nil {
 			return nil, fmt.Errorf("google.protobuf.Int32Value: %w", err)
 		}
-		return wrapperspb.Int64(int64(i)), nil
+		return wrapperspb.Int64(i), nil
 	case wkt.BytesValue:
 		b, err := decodeBytes(v, "bytes")
 		if err != nil {
@@ -327,11 +327,11 @@ func decodeAny(v map[string]interface{}) (*anypb.Any, error) {
 	if err != nil {
 		return nil, fmt.Errorf("google.protobuf.Any: %w", err)
 	}
-	var any anypb.Any
-	if err := protojson.Unmarshal([]byte(str), &any); err != nil {
+	var value anypb.Any
+	if err := protojson.Unmarshal([]byte(str), &value); err != nil {
 		return nil, fmt.Errorf("google.protobuf.Any: unmarshal: %w", err)
 	}
-	return &any, nil
+	return &value, nil
 }
 
 func schemaStruct() avro.Schema {
@@ -396,7 +396,6 @@ func timeOfDayFromDuration(dur time.Duration) *timeofday.TimeOfDay {
 	seconds := dur.Truncate(time.Second)
 	dur -= seconds
 	nanos := dur.Truncate(time.Nanosecond)
-	dur -= nanos
 	return &timeofday.TimeOfDay{
 		Hours:   int32(hours.Hours()),
 		Minutes: int32(minutes.Minutes()),

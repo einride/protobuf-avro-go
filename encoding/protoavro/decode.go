@@ -83,7 +83,11 @@ func decodeField(data interface{}, val protoreflect.Message, f protoreflect.Fiel
 	return nil
 }
 
-func decodeFieldKind(data interface{}, mutable protoreflect.Value, f protoreflect.FieldDescriptor) (protoreflect.Value, error) {
+func decodeFieldKind(
+	data interface{},
+	mutable protoreflect.Value,
+	f protoreflect.FieldDescriptor,
+) (protoreflect.Value, error) {
 	switch f.Kind() {
 	case protoreflect.MessageKind, protoreflect.GroupKind:
 		if err := decodeMessage(data, mutable.Message()); err != nil {
@@ -139,9 +143,8 @@ func decodeFieldKind(data interface{}, mutable protoreflect.Value, f protoreflec
 		}
 		if v := f.Enum().Values().ByName(protoreflect.Name(str)); v != nil {
 			return protoreflect.ValueOfEnum(v.Number()), nil
-		} else {
-			return protoreflect.ValueOfEnum(0), nil
 		}
+		return protoreflect.ValueOfEnum(0), nil
 	case protoreflect.DoubleKind:
 		dbl, ok := data.(float64)
 		if !ok {
@@ -154,7 +157,6 @@ func decodeFieldKind(data interface{}, mutable protoreflect.Value, f protoreflec
 			return protoreflect.Value{}, fmt.Errorf("field %s: expected float32, got %T", f.Name(), data)
 		}
 		return protoreflect.ValueOfFloat32(flt), nil
-
 	}
 	return protoreflect.Value{}, fmt.Errorf("unexpected kind %s", f.Kind())
 }
