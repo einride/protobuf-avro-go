@@ -25,6 +25,14 @@ clean-sage:
 all: $(sagefile)
 	@$(sagefile) All
 
+.PHONY: buf-generate
+buf-generate: $(sagefile)
+	@$(sagefile) BufGenerate
+
+.PHONY: buf-lint
+buf-lint: $(sagefile)
+	@$(sagefile) BufLint
+
 .PHONY: convco-check
 convco-check: $(sagefile)
 	@$(sagefile) ConvcoCheck
@@ -56,3 +64,7 @@ go-review: $(sagefile)
 .PHONY: go-test
 go-test: $(sagefile)
 	@$(sagefile) GoTest
+
+.PHONY: protoc-gen-go
+protoc-gen-go: $(sagefile)
+	@$(sagefile) ProtocGenGo
