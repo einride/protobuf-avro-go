@@ -1,4 +1,0 @@
-SHELL := /bin/bash
-
-include tools/semantic-release/rules.mk
-
