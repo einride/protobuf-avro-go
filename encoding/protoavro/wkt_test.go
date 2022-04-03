@@ -52,9 +52,9 @@ func Test_WKT(t *testing.T) {
 
 		// time of day
 		&timeofday.TimeOfDay{Hours: 23, Minutes: 59, Seconds: 59},
-		&timeofday.TimeOfDay{Hours: 00, Minutes: 00, Seconds: 00, Nanos: 00},
-		&timeofday.TimeOfDay{Hours: 36, Minutes: 00, Seconds: 00, Nanos: 00},
-		&timeofday.TimeOfDay{Hours: 10, Minutes: 00, Seconds: 00, Nanos: 1000},
+		&timeofday.TimeOfDay{Hours: 0, Minutes: 0, Seconds: 0, Nanos: 0},
+		&timeofday.TimeOfDay{Hours: 36, Minutes: 0, Seconds: 0, Nanos: 0},
+		&timeofday.TimeOfDay{Hours: 10, Minutes: 0, Seconds: 0, Nanos: 1000},
 
 		// duration
 		durationpb.New(time.Hour),
