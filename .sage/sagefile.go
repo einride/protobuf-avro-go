@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"path/filepath"
 
 	"go.einride.tech/sage/sg"
+	"go.einride.tech/sage/sgtool"
+	"go.einride.tech/sage/tools/sgbuf"
 	"go.einride.tech/sage/tools/sgconvco"
 	"go.einride.tech/sage/tools/sggit"
 	"go.einride.tech/sage/tools/sggo"
@@ -24,6 +27,7 @@ func main() {
 
 func All(ctx context.Context) error {
 	sg.Deps(ctx, ConvcoCheck, GoLint, GoReview, GoTest, FormatMarkdown, FormatYAML)
+	sg.Deps(ctx, BufLint, BufGenerate)
 	sg.SerialDeps(ctx, GoModTidy, GitVerifyNoDiff)
 	return nil
 }
@@ -66,4 +70,27 @@ func ConvcoCheck(ctx context.Context) error {
 func GitVerifyNoDiff(ctx context.Context) error {
 	sg.Logger(ctx).Println("verifying that git has no diff...")
 	return sggit.VerifyNoDiff(ctx)
+}
+
+func BufGenerate(ctx context.Context) error {
+	sg.Deps(ctx, ProtocGenGo)
+	protoPath := sg.FromGitRoot("internal", "examples", "proto")
+	genPath := filepath.Join(protoPath, "gen")
+	if err := sg.Command(ctx, "git", "clean", "-fdx", genPath).Run(); err != nil {
+		return err
+	}
+	cmd := sgbuf.Command(ctx, "generate", "--path", "einride")
+	cmd.Dir = protoPath
+	return cmd.Run()
+}
+
+func BufLint(ctx context.Context) error {
+	cmd := sgbuf.Command(ctx, "lint")
+	cmd.Dir = sg.FromGitRoot("internal", "examples", "proto")
+	return cmd.Run()
+}
+
+func ProtocGenGo(ctx context.Context) error {
+	_, err := sgtool.GoInstallWithModfile(ctx, "google.golang.org/protobuf/cmd/protoc-gen-go", sg.FromGitRoot("go.mod"))
+	return err
 }
