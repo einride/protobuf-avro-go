@@ -63,7 +63,7 @@ func Test_WKT(t *testing.T) {
 	} {
 		tt := tt
 		t.Run(string(tt.ProtoReflect().Descriptor().FullName()), func(t *testing.T) {
-			encoded, err := encodeWKT(tt.ProtoReflect())
+			encoded, err := SchemaOptions{}.encodeWKT(tt.ProtoReflect())
 			assert.NilError(t, err)
 			t.Log(encoded)
 			decoded := tt.ProtoReflect().New()

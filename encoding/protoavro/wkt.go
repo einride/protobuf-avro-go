@@ -73,7 +73,7 @@ func schemaWKT(message protoreflect.MessageDescriptor) (avro.Schema, error) {
 	return nil, fmt.Errorf("uknown wellknown type %s", message.FullName())
 }
 
-func encodeWKT(message protoreflect.Message) (map[string]interface{}, error) {
+func (o SchemaOptions) encodeWKT(message protoreflect.Message) (map[string]interface{}, error) {
 	desc := message.Descriptor()
 	switch desc.FullName() {
 	case wkt.DoubleValue,
@@ -85,31 +85,31 @@ func encodeWKT(message protoreflect.Message) (map[string]interface{}, error) {
 		wkt.BoolValue,
 		wkt.StringValue,
 		wkt.BytesValue:
-		value, err := encodeWrapper(message)
+		value, err := o.encodeWrapper(message)
 		if err != nil {
 			return nil, err
 		}
 		return value, nil
 	case wkt.Struct:
-		value, err := encodeStruct(message.Interface().(*structpb.Struct))
+		value, err := o.encodeStruct(message.Interface().(*structpb.Struct))
 		if err != nil {
 			return nil, err
 		}
 		return value, nil
 	case wkt.Any:
-		value, err := encodeAny(message.Interface().(*anypb.Any))
+		value, err := o.encodeAny(message.Interface().(*anypb.Any))
 		if err != nil {
 			return nil, err
 		}
 		return value, nil
 	case wkt.Timestamp:
-		return encodeTimestamp(message.Interface().(*timestamppb.Timestamp)), nil
+		return o.encodeTimestamp(message.Interface().(*timestamppb.Timestamp)), nil
 	case wkt.Duration:
-		return encodeDuration(message.Interface().(*durationpb.Duration)), nil
+		return o.encodeDuration(message.Interface().(*durationpb.Duration)), nil
 	case wkt.Date:
-		return encodeDate(message.Interface().(*date.Date)), nil
+		return o.encodeDate(message.Interface().(*date.Date)), nil
 	case wkt.TimeOfDay:
-		return encodeTimeOfDay(message.Interface().(*timeofday.TimeOfDay)), nil
+		return o.encodeTimeOfDay(message.Interface().(*timeofday.TimeOfDay)), nil
 	default:
 		return nil, fmt.Errorf("unknown wellknown type %s", desc.FullName())
 	}
@@ -173,29 +173,29 @@ func schemaWrapper(w string) (avro.Schema, error) {
 	}
 }
 
-func encodeWrapper(msg protoreflect.Message) (map[string]interface{}, error) {
+func (o SchemaOptions) encodeWrapper(msg protoreflect.Message) (map[string]interface{}, error) {
 	if msg == nil {
 		return nil, nil
 	}
 	switch msg.Descriptor().FullName() {
 	case wkt.DoubleValue:
-		return unionValue("double", msg.Interface().(*wrapperspb.DoubleValue).GetValue()), nil
+		return o.unionValue("double", msg.Interface().(*wrapperspb.DoubleValue).GetValue()), nil
 	case wkt.FloatValue:
-		return unionValue("float", msg.Interface().(*wrapperspb.FloatValue).GetValue()), nil
+		return o.unionValue("float", msg.Interface().(*wrapperspb.FloatValue).GetValue()), nil
 	case wkt.Int32Value:
-		return unionValue("int", msg.Interface().(*wrapperspb.Int32Value).GetValue()), nil
+		return o.unionValue("int", msg.Interface().(*wrapperspb.Int32Value).GetValue()), nil
 	case wkt.UInt32Value:
-		return unionValue("int", int32(msg.Interface().(*wrapperspb.UInt32Value).GetValue())), nil
+		return o.unionValue("int", int32(msg.Interface().(*wrapperspb.UInt32Value).GetValue())), nil
 	case wkt.Int64Value:
-		return unionValue("long", msg.Interface().(*wrapperspb.Int64Value).GetValue()), nil
+		return o.unionValue("long", msg.Interface().(*wrapperspb.Int64Value).GetValue()), nil
 	case wkt.UInt64Value:
-		return unionValue("long", int64(msg.Interface().(*wrapperspb.UInt64Value).GetValue())), nil
+		return o.unionValue("long", int64(msg.Interface().(*wrapperspb.UInt64Value).GetValue())), nil
 	case wkt.BoolValue:
-		return unionValue("boolean", msg.Interface().(*wrapperspb.BoolValue).GetValue()), nil
+		return o.unionValue("boolean", msg.Interface().(*wrapperspb.BoolValue).GetValue()), nil
 	case wkt.StringValue:
-		return unionValue("string", msg.Interface().(*wrapperspb.StringValue).GetValue()), nil
+		return o.unionValue("string", msg.Interface().(*wrapperspb.StringValue).GetValue()), nil
 	case wkt.BytesValue:
-		return unionValue("bytes", msg.Interface().(*wrapperspb.BytesValue).GetValue()), nil
+		return o.unionValue("bytes", msg.Interface().(*wrapperspb.BytesValue).GetValue()), nil
 	default:
 		return nil, fmt.Errorf("unknown wrapper type %s", msg.Descriptor().FullName())
 	}
@@ -269,7 +269,7 @@ func schemaDate() avro.Schema {
 	return avro.Nullable(avro.Date())
 }
 
-func encodeDate(d *date.Date) map[string]interface{} {
+func (o SchemaOptions) encodeDate(d *date.Date) map[string]interface{} {
 	civilDate := civil.Date{
 		Year:  int(d.Year),
 		Month: time.Month(d.Month),
@@ -280,7 +280,7 @@ func encodeDate(d *date.Date) map[string]interface{} {
 		Month: time.January,
 		Day:   1,
 	}
-	return unionValue("int.date", int32(civilDate.DaysSince(epoch)))
+	return o.unionValue("int.date", int32(civilDate.DaysSince(epoch)))
 }
 
 func decodeDate(v map[string]interface{}) (*date.Date, error) {
@@ -311,12 +311,12 @@ func schemaAny() avro.Schema {
 	return avro.Nullable(avro.String()) // EncodeJSON string
 }
 
-func encodeAny(a *anypb.Any) (map[string]interface{}, error) {
+func (o SchemaOptions) encodeAny(a *anypb.Any) (map[string]interface{}, error) {
 	data, err := protojson.Marshal(a)
 	if err != nil {
 		return nil, fmt.Errorf("google.protobuf.Any: marshal: %w", err)
 	}
-	return unionValue("string", string(data)), nil
+	return o.unionValue("string", string(data)), nil
 }
 
 func decodeAny(v map[string]interface{}) (*anypb.Any, error) {
@@ -338,12 +338,12 @@ func schemaStruct() avro.Schema {
 	return avro.Nullable(avro.String()) // EncodeJSON string
 }
 
-func encodeStruct(a *structpb.Struct) (map[string]interface{}, error) {
+func (o *SchemaOptions) encodeStruct(a *structpb.Struct) (map[string]interface{}, error) {
 	data, err := protojson.Marshal(a)
 	if err != nil {
 		return nil, fmt.Errorf("google.protobuf.Struct: marshal: %w", err)
 	}
-	return unionValue("string", string(data)), nil
+	return o.unionValue("string", string(data)), nil
 }
 
 func decodeStruct(v map[string]interface{}) (*structpb.Struct, error) {
@@ -365,12 +365,12 @@ func schemaTimeOfDay() avro.Schema {
 	return avro.Nullable(avro.TimeMicros())
 }
 
-func encodeTimeOfDay(t *timeofday.TimeOfDay) map[string]interface{} {
+func (o *SchemaOptions) encodeTimeOfDay(t *timeofday.TimeOfDay) map[string]interface{} {
 	d := time.Hour*time.Duration(t.Hours) +
 		time.Minute*time.Duration(t.Minutes) +
 		time.Second*time.Duration(t.Seconds) +
 		time.Nanosecond*time.Duration(t.Nanos)
-	return unionValue("long.time-micros", d.Microseconds())
+	return o.unionValue("long.time-micros", d.Microseconds())
 }
 
 func decodeTimeOfDay(v map[string]interface{}) (*timeofday.TimeOfDay, error) {
@@ -408,8 +408,8 @@ func schemaDuration() avro.Schema {
 	return avro.Nullable(avro.Float())
 }
 
-func encodeDuration(dur *durationpb.Duration) map[string]interface{} {
-	return unionValue("float", dur.AsDuration().Seconds())
+func (o *SchemaOptions) encodeDuration(dur *durationpb.Duration) map[string]interface{} {
+	return o.unionValue("float", dur.AsDuration().Seconds())
 }
 
 func decodeDuration(v map[string]interface{}) (*durationpb.Duration, error) {
@@ -426,8 +426,8 @@ func schemaTimestamp() avro.Schema {
 	return avro.Nullable(avro.TimestampMicros())
 }
 
-func encodeTimestamp(t *timestamppb.Timestamp) map[string]interface{} {
-	return unionValue("long.timestamp-micros", t.AsTime().UnixNano()/1e3)
+func (o *SchemaOptions) encodeTimestamp(t *timestamppb.Timestamp) map[string]interface{} {
+	return o.unionValue("long.timestamp-micros", t.AsTime().UnixNano()/1e3)
 }
 
 func decodeTimestamp(v map[string]interface{}) (*timestamppb.Timestamp, error) {

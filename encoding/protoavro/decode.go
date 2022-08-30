@@ -9,11 +9,11 @@ import (
 
 // decodeJSON decodes the JSON encoded avro data and places the
 // result in msg.
-func decodeJSON(data interface{}, msg proto.Message) error {
-	return decodeMessage(data, msg.ProtoReflect())
+func (o *SchemaOptions) decodeJSON(data interface{}, msg proto.Message) error {
+	return o.decodeMessage(data, msg.ProtoReflect())
 }
 
-func decodeMessage(data interface{}, msg protoreflect.Message) error {
+func (o *SchemaOptions) decodeMessage(data interface{}, msg protoreflect.Message) error {
 	if data == nil {
 		return nil
 	}
@@ -28,28 +28,28 @@ func decodeMessage(data interface{}, msg protoreflect.Message) error {
 	// unwrap union
 	desc := msg.Descriptor()
 	if msgData, ok := d[string(desc.FullName())]; len(d) == 1 && ok {
-		return decodeMessage(msgData, msg)
+		return o.decodeMessage(msgData, msg)
 	}
 	for fieldName, fieldValue := range d {
 		fd, ok := findField(desc, fieldName)
 		if !ok {
 			return fmt.Errorf("unexpected field %s", fieldName)
 		}
-		if err := decodeField(fieldValue, msg, fd); err != nil {
+		if err := o.decodeField(fieldValue, msg, fd); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func decodeField(data interface{}, val protoreflect.Message, f protoreflect.FieldDescriptor) error {
+func (o *SchemaOptions) decodeField(data interface{}, val protoreflect.Message, f protoreflect.FieldDescriptor) error {
 	if data == nil {
 		return nil
 	}
 	switch {
 	case f.IsMap():
 		mp := val.NewField(f).Map()
-		if err := decodeMap(data, f, mp); err != nil {
+		if err := o.decodeMap(data, f, mp); err != nil {
 			return err
 		}
 		val.Set(f, protoreflect.ValueOfMap(mp))
@@ -65,7 +65,7 @@ func decodeField(data interface{}, val protoreflect.Message, f protoreflect.Fiel
 				list.Append(list.NewElement())
 				continue
 			}
-			fieldValue, err := decodeFieldKind(el, list.NewElement(), f)
+			fieldValue, err := o.decodeFieldKind(el, list.NewElement(), f)
 			if err != nil {
 				return err
 			}
@@ -74,7 +74,7 @@ func decodeField(data interface{}, val protoreflect.Message, f protoreflect.Fiel
 		val.Set(f, protoreflect.ValueOfList(list))
 		return nil
 	default:
-		fieldValue, err := decodeFieldKind(data, val.NewField(f), f)
+		fieldValue, err := o.decodeFieldKind(data, val.NewField(f), f)
 		if err != nil {
 			return err
 		}
@@ -83,14 +83,14 @@ func decodeField(data interface{}, val protoreflect.Message, f protoreflect.Fiel
 	return nil
 }
 
-func decodeFieldKind(
+func (o *SchemaOptions) decodeFieldKind(
 	data interface{},
 	mutable protoreflect.Value,
 	f protoreflect.FieldDescriptor,
 ) (protoreflect.Value, error) {
 	switch f.Kind() {
 	case protoreflect.MessageKind, protoreflect.GroupKind:
-		if err := decodeMessage(data, mutable.Message()); err != nil {
+		if err := o.decodeMessage(data, mutable.Message()); err != nil {
 			return protoreflect.Value{}, err
 		}
 		return mutable, nil
