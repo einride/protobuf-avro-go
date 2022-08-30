@@ -18,9 +18,20 @@ func NewUnmarshaler(reader io.Reader) (*Unmarshaler, error) {
 	return &Unmarshaler{r: r}, nil
 }
 
+// NewUnmarshaler returns a new unmarshaler that reads protobuf messages from reader in
+// Avro binary format.
+func (o SchemaOptions) NewUnmarshaler(reader io.Reader) (*Unmarshaler, error) {
+	r, err := goavro.NewOCFReader(reader)
+	if err != nil {
+		return nil, fmt.Errorf("new ocf writer: %w", err)
+	}
+	return &Unmarshaler{opts: o, r: r}, nil
+}
+
 // Unmarshaler reads and decodes Avro binary encoded messages.
 type Unmarshaler struct {
-	r *goavro.OCFReader
+	opts SchemaOptions
+	r    *goavro.OCFReader
 }
 
 // Scan returns true when there is at least one more
@@ -35,7 +46,7 @@ func (m *Unmarshaler) Unmarshal(message proto.Message) error {
 	if err != nil {
 		return fmt.Errorf("read message: %w", err)
 	}
-	if err := decodeJSON(data, message); err != nil {
+	if err := m.opts.decodeJSON(data, message); err != nil {
 		return fmt.Errorf("decode message: %w", err)
 	}
 	return nil

@@ -11,7 +11,7 @@ import (
 
 func ExampleInferSchema() {
 	msg := &library.Book{}
-	schema, err := protoavro.InferSchema(msg.ProtoReflect().Descriptor())
+	schema, err := protoavro.SchemaOptions{}.InferSchema(msg.ProtoReflect().Descriptor())
 	if err != nil {
 		panic(err)
 	}

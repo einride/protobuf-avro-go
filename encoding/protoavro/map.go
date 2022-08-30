@@ -8,8 +8,8 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-func (s schemaInferrer) inferMapSchema(field protoreflect.FieldDescriptor) (avro.Schema, error) {
-	fieldKind, err := s.inferFieldKind(field)
+func (s schemaInferrer) inferMapSchema(field protoreflect.FieldDescriptor, recursiveIndex int) (avro.Schema, error) {
+	fieldKind, err := s.inferFieldKind(field, recursiveIndex)
 	if err != nil {
 		return nil, err
 	}
@@ -19,7 +19,11 @@ func (s schemaInferrer) inferMapSchema(field protoreflect.FieldDescriptor) (avro
 	}), nil
 }
 
-func encodeMap(field protoreflect.FieldDescriptor, m protoreflect.Map) (interface{}, error) {
+func (o *SchemaOptions) encodeMap(
+	field protoreflect.FieldDescriptor,
+	m protoreflect.Map,
+	recursiveIndex int,
+) (interface{}, error) {
 	// m.Range ranges over the entries in unspecified order.
 	// To aid in testing, the keys are sorted. This is similar
 	// to what json.Marshal does for maps.
@@ -39,11 +43,11 @@ func encodeMap(field protoreflect.FieldDescriptor, m protoreflect.Map) (interfac
 	keyField := field.MapKey()
 	for _, key := range keys {
 		value := m.Get(key)
-		keyValue, err := fieldKindJSON(keyField, key.Value())
+		keyValue, err := o.fieldKindJSON(keyField, key.Value(), recursiveIndex)
 		if err != nil {
 			return nil, err
 		}
-		valueValue, err := fieldKindJSON(valueField, value)
+		valueValue, err := o.fieldKindJSON(valueField, value, recursiveIndex)
 		if err != nil {
 			return nil, err
 		}
@@ -52,18 +56,18 @@ func encodeMap(field protoreflect.FieldDescriptor, m protoreflect.Map) (interfac
 			"value": valueValue,
 		})
 	}
-	return unionValue("array", entries), nil
+	return o.unionValue("array", entries), nil
 }
 
-func decodeMap(data interface{}, f protoreflect.FieldDescriptor, mp protoreflect.Map) error {
+func (o SchemaOptions) decodeMap(data interface{}, f protoreflect.FieldDescriptor, mp protoreflect.Map) error {
 	list, err := decodeListLike(data, "array")
 	if err != nil {
 		return err
 	}
-	return decodeMapEntries(list, f, mp)
+	return o.decodeMapEntries(list, f, mp)
 }
 
-func decodeMapEntries(data []interface{}, f protoreflect.FieldDescriptor, mp protoreflect.Map) error {
+func (o SchemaOptions) decodeMapEntries(data []interface{}, f protoreflect.FieldDescriptor, mp protoreflect.Map) error {
 	for _, el := range data {
 		entry, ok := el.(map[string]interface{})
 		if !ok {
@@ -77,11 +81,11 @@ func decodeMapEntries(data []interface{}, f protoreflect.FieldDescriptor, mp pro
 		if !ok {
 			return fmt.Errorf("missing 'value' in map entry for '%s'", f.Name())
 		}
-		keyValue, err := decodeFieldKind(keyData, protoreflect.Value{}, f.MapKey())
+		keyValue, err := o.decodeFieldKind(keyData, protoreflect.Value{}, f.MapKey())
 		if err != nil {
 			return err
 		}
-		valueValue, err := decodeFieldKind(valueData, mp.NewValue(), f.MapValue())
+		valueValue, err := o.decodeFieldKind(valueData, mp.NewValue(), f.MapValue())
 		if err != nil {
 			return err
 		}

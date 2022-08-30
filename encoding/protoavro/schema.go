@@ -8,24 +8,32 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-// InferSchema returns the Avro schema for the protobuf message descriptor.
+// InferSchema returns the Avro schema, with default SchemaOptions, for the protobuf message descriptor.
 func InferSchema(desc protoreflect.MessageDescriptor) (avro.Schema, error) {
-	return newSchemaInferrer().inferMessageSchema(desc)
+	return SchemaOptions{}.newSchemaInferrer().inferMessageSchema(desc, 0)
+}
+
+// InferSchema returns the Avro schema for the protobuf message descriptor.
+func (o SchemaOptions) InferSchema(desc protoreflect.MessageDescriptor) (avro.Schema, error) {
+	return o.newSchemaInferrer().inferMessageSchema(desc, 0)
 }
 
 type schemaInferrer struct {
+	opts SchemaOptions
 	seen map[protoreflect.FullName]struct{}
 }
 
-func newSchemaInferrer() schemaInferrer {
-	return schemaInferrer{seen: make(map[protoreflect.FullName]struct{})}
+func (o SchemaOptions) newSchemaInferrer() schemaInferrer {
+	return schemaInferrer{seen: make(map[protoreflect.FullName]struct{}), opts: o}
 }
 
-func (s schemaInferrer) inferMessageSchema(message protoreflect.MessageDescriptor) (avro.Schema, error) {
+func (s schemaInferrer) inferMessageSchema(
+	message protoreflect.MessageDescriptor,
+	recursiveIndex int,
+) (avro.Schema, error) {
 	if isWKT(message.FullName()) {
 		return schemaWKT(message)
 	}
-
 	if _, ok := s.seen[message.FullName()]; ok {
 		return avro.Nullable(avro.Reference(message.FullName())), nil
 	}
@@ -40,11 +48,10 @@ func (s schemaInferrer) inferMessageSchema(message protoreflect.MessageDescripto
 	}
 	for i := 0; i < message.Fields().Len(); i++ {
 		field := message.Fields().Get(i)
-		fieldSchema, err := s.inferField(field)
+		fieldSchema, err := s.inferField(field, recursiveIndex+1)
 		if err != nil {
 			return nil, err
 		}
-
 		fieldSchema.Type = avro.Nullable(fieldSchema.Type)
 		record.Fields = append(
 			record.Fields,
@@ -54,6 +61,9 @@ func (s schemaInferrer) inferMessageSchema(message protoreflect.MessageDescripto
 	if message.IsMapEntry() {
 		return record, nil
 	}
+	if s.opts.OmitRootElement && recursiveIndex == 0 {
+		return record, nil
+	}
 	return avro.Nullable(record), nil
 }
 
@@ -61,10 +71,10 @@ func namespace(desc protoreflect.Descriptor) string {
 	return strings.TrimSuffix(string(desc.FullName()), "."+string(desc.Name()))
 }
 
-func (s schemaInferrer) inferField(field protoreflect.FieldDescriptor) (avro.Field, error) {
+func (s schemaInferrer) inferField(field protoreflect.FieldDescriptor, recursiveIndex int) (avro.Field, error) {
 	doc := field.ParentFile().SourceLocations().ByDescriptor(field).LeadingComments
 	if field.IsMap() {
-		mapType, err := s.inferMapSchema(field)
+		mapType, err := s.inferMapSchema(field, recursiveIndex)
 		if err != nil {
 			return avro.Field{}, err
 		}
@@ -74,7 +84,7 @@ func (s schemaInferrer) inferField(field protoreflect.FieldDescriptor) (avro.Fie
 			Type: mapType,
 		}, nil
 	}
-	fieldKind, err := s.inferFieldKind(field)
+	fieldKind, err := s.inferFieldKind(field, recursiveIndex)
 	if err != nil {
 		return avro.Field{}, err
 	}
@@ -115,7 +125,7 @@ func oneofDoc(doc string, oneof protoreflect.OneofDescriptor) string {
 	return fmt.Sprintf("%s\n\n%s", doc, oneofDoc)
 }
 
-func (s schemaInferrer) inferFieldKind(field protoreflect.FieldDescriptor) (avro.Schema, error) {
+func (s schemaInferrer) inferFieldKind(field protoreflect.FieldDescriptor, recursiveIndex int) (avro.Schema, error) {
 	switch field.Kind() {
 	case protoreflect.DoubleKind:
 		return avro.Double(), nil
@@ -142,7 +152,7 @@ func (s schemaInferrer) inferFieldKind(field protoreflect.FieldDescriptor) (avro
 	case protoreflect.EnumKind:
 		return s.inferEnumSchema(field.Enum()), nil
 	case protoreflect.MessageKind, protoreflect.GroupKind:
-		return s.inferMessageSchema(field.Message())
+		return s.inferMessageSchema(field.Message(), recursiveIndex)
 	}
 	return nil, fmt.Errorf("unsupported field kind %s %s", field.Name(), field.Kind())
 }

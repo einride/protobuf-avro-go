@@ -10,10 +10,16 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-// NewMarshaler returns a new marshaler that writes protobuf messages to writer in
+// NewMarshaler returns a new marshaler, with default SchemaOptions, that writes protobuf messages to writer in
 // Avro binary format.
 func NewMarshaler(descriptor protoreflect.MessageDescriptor, writer io.Writer) (*Marshaler, error) {
-	schema, err := InferSchema(descriptor)
+	return SchemaOptions{}.NewMarshaler(descriptor, writer)
+}
+
+// NewMarshaler returns a new marshaler that writes protobuf messages to writer in
+// Avro binary format.
+func (o SchemaOptions) NewMarshaler(descriptor protoreflect.MessageDescriptor, writer io.Writer) (*Marshaler, error) {
+	schema, err := o.InferSchema(descriptor)
 	if err != nil {
 		return nil, fmt.Errorf("infer schema: %w", err)
 	}
@@ -28,11 +34,12 @@ func NewMarshaler(descriptor protoreflect.MessageDescriptor, writer io.Writer) (
 	if err != nil {
 		return nil, fmt.Errorf("new ocf writer: %w", err)
 	}
-	return &Marshaler{w: w, desc: descriptor}, nil
+	return &Marshaler{w: w, desc: descriptor, opts: o}, nil
 }
 
 // Marshaler encodes and writes Avro binary encoded messages.
 type Marshaler struct {
+	opts SchemaOptions
 	desc protoreflect.MessageDescriptor
 	w    *goavro.OCFWriter
 }
@@ -46,12 +53,36 @@ func (m *Marshaler) Marshal(messages ...proto.Message) error {
 		if a != b {
 			return fmt.Errorf("expected message '%s' but got '%s'", a, b)
 		}
-		m, err := encodeJSON(message)
+		m, err := m.opts.encodeJSON(message)
 		if err != nil {
 			return fmt.Errorf("encode json: %w", err)
 		}
 		data = append(data, m)
 	}
+	if err := m.w.Append(data); err != nil {
+		return fmt.Errorf("append: %w", err)
+	}
+	return nil
+}
+
+// Encode encodes the message.
+func (o SchemaOptions) Encode(message proto.Message) (interface{}, error) {
+	encJSON, err := o.encodeJSON(message)
+	if err != nil {
+		return nil, fmt.Errorf("encode json: %w", err)
+	}
+
+	return encJSON, nil
+}
+
+// Append writes the messages to the writer.
+func (m *Marshaler) Append(messages interface{}) error {
+	data, ok := messages.([]interface{})
+	if !ok {
+		// If messages is not a slice, make it a slice.
+		data = append(data, messages)
+	}
+
 	if err := m.w.Append(data); err != nil {
 		return fmt.Errorf("append: %w", err)
 	}
