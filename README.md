@@ -46,7 +46,7 @@ func ExampleInferSchema() {
 
 ### `protoavro.Marshaler`
 
-Writes protobuf messages to an [Object Container File](https://avro.apache.org/docs/current/spec.html#Object+Container+Files).
+Writes protobuf messages to an [Object Container File](https://avro.apache.org/docs/current/specification/#object-container-files).
 
 ```go
 func ExampleMarshaler() {
@@ -75,7 +75,7 @@ func ExampleMarshaler() {
 
 ### `protoavro.Unmarshaler`
 
-Reads protobuf messages from a [Object Container File](https://avro.apache.org/docs/current/spec.html#Object+Container+Files).
+Reads protobuf messages from a [Object Container File](https://avro.apache.org/docs/current/specification/#object-container-files).
 
 ```go
 func ExampleUnmarshaler() {
