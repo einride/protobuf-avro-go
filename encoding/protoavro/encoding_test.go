@@ -721,10 +721,10 @@ func Test_OmitRoot_JSON(t *testing.T) {
 		{
 			name: "examplev1.ExampleEnum",
 			msg: &examplev1.ExampleEnum{
-				EnumValue: examplev1.ExampleEnum_ENUM_VALUE2,
+				EnumValue: examplev1.ExampleEnum_ENUM_VALUE3,
 			},
 			expected: map[string]interface{}{
-				"enum_value": map[string]interface{}{"einride.avro.example.v1.ExampleEnum.Enum": "ENUM_VALUE2"},
+				"enum_value": map[string]interface{}{"einride.avro.example.v1.ExampleEnum.Enum": "ENUM_VALUE3"},
 			},
 		},
 		{
