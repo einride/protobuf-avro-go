@@ -95,7 +95,7 @@ func (o SchemaOptions) fieldKindJSON(
 	case protoreflect.EnumKind:
 		return o.unionValue(
 			string(field.Enum().FullName()),
-			string(field.Enum().Values().Get(int(value.Enum())).Name()),
+			string(field.Enum().Values().ByNumber(value.Enum()).Name()),
 		), nil
 	case protoreflect.StringKind:
 		return o.unionValue("string", value.String()), nil

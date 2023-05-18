@@ -11,5 +11,6 @@ message ExampleEnum {
     ENUM_UNSPECIFIED = 0;
     ENUM_VALUE1 = 1;
     ENUM_VALUE2 = 2;
+    ENUM_VALUE3 = 4;
   }
 }
