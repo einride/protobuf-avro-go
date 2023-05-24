@@ -93,6 +93,12 @@ func (o SchemaOptions) fieldKindJSON(
 	case protoreflect.MessageKind, protoreflect.GroupKind:
 		return o.messageJSON(value.Message(), recursiveIndex)
 	case protoreflect.EnumKind:
+		if field.Enum().Values().ByNumber(value.Enum()) == nil {
+			return o.unionValue(
+				string(field.Enum().FullName()),
+				string(field.Enum().Values().ByNumber(protoreflect.EnumNumber(0)).Name()),
+			), nil
+		}
 		return o.unionValue(
 			string(field.Enum().FullName()),
 			string(field.Enum().Values().ByNumber(value.Enum()).Name()),

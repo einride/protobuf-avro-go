@@ -728,6 +728,15 @@ func Test_OmitRoot_JSON(t *testing.T) {
 			},
 		},
 		{
+			name: "examplev1.ExampleEnumUnspecifiedNumber",
+			msg: &examplev1.ExampleEnum{
+				EnumValue: 1337,
+			},
+			expected: map[string]interface{}{
+				"enum_value": map[string]interface{}{"einride.avro.example.v1.ExampleEnum.Enum": "ENUM_UNSPECIFIED"},
+			},
+		},
+		{
 			name: "examplev1.ExampleList",
 			msg: &examplev1.ExampleList{
 				Int64List:  []int64{1, 2, 3},
@@ -1126,7 +1135,9 @@ func Test_OmitRoot_JSON(t *testing.T) {
 			next := proto.Clone(tt.msg)
 			proto.Reset(next)
 			assert.NilError(t, tt.opts.decodeJSON(got, next))
-			assert.DeepEqual(t, tt.msg, next, protocmp.Transform())
+			if tt.name != "examplev1.ExampleEnumUnspecifiedNumber" {
+				assert.DeepEqual(t, tt.msg, next, protocmp.Transform())
+			}
 		})
 	}
 }
