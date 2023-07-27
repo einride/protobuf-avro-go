@@ -12,6 +12,7 @@ import (
 	"go.einride.tech/sage/tools/sggo"
 	"go.einride.tech/sage/tools/sggolangcilint"
 	"go.einride.tech/sage/tools/sggoreview"
+	"go.einride.tech/sage/tools/sggosemanticrelease"
 	"go.einride.tech/sage/tools/sgmarkdownfmt"
 	"go.einride.tech/sage/tools/sgyamlfmt"
 )
@@ -20,12 +21,12 @@ func main() {
 	sg.GenerateMakefiles(
 		sg.Makefile{
 			Path:          sg.FromGitRoot("Makefile"),
-			DefaultTarget: All,
+			DefaultTarget: Default,
 		},
 	)
 }
 
-func All(ctx context.Context) error {
+func Default(ctx context.Context) error {
 	sg.Deps(ctx, ConvcoCheck, GoLint, GoReview, GoTest, FormatMarkdown, FormatYAML)
 	sg.Deps(ctx, BufLint, BufGenerate)
 	sg.SerialDeps(ctx, GoModTidy, GitVerifyNoDiff)
@@ -49,7 +50,7 @@ func GoTest(ctx context.Context) error {
 
 func GoReview(ctx context.Context) error {
 	sg.Logger(ctx).Println("reviewing Go files...")
-	return sggoreview.Command(ctx, "-c", "1", "./...").Run()
+	return sggoreview.Run(ctx)
 }
 
 func GoLint(ctx context.Context) error {
@@ -93,4 +94,19 @@ func BufLint(ctx context.Context) error {
 func ProtocGenGo(ctx context.Context) error {
 	_, err := sgtool.GoInstallWithModfile(ctx, "google.golang.org/protobuf/cmd/protoc-gen-go", sg.FromGitRoot("go.mod"))
 	return err
+}
+
+func SemanticRelease(ctx context.Context, repo string, dry bool) error {
+	sg.Logger(ctx).Println("triggering release...")
+	args := []string{
+		"--allow-initial-development-versions",
+		"--allow-no-changes",
+		"--ci-condition=default",
+		"--provider=github",
+		"--provider-opt=slug=" + repo,
+	}
+	if dry {
+		args = append(args, "--dry")
+	}
+	return sggosemanticrelease.Command(ctx, args...).Run()
 }
