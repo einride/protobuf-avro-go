@@ -8,7 +8,7 @@ require (
 	github.com/linkedin/goavro/v2 v2.12.0
 	google.golang.org/genproto v0.0.0-20230726155614-23370e0ffb3e
 	google.golang.org/protobuf v1.31.0
-	gotest.tools/v3 v3.5.0
+	gotest.tools/v3 v3.5.1
 )
 
 require (
