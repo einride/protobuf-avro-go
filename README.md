@@ -1,10 +1,11 @@
-Protobuf + Avro
-===============
+# Protobuf + Avro
 
-Functionality for converting between [Protocol Buffers](https://developers.google.com/protocol-buffers/) and [Avro](https://avro.apache.org/). This can for example be used to bulk load protobuf messages to BigQuery.
+Functionality for converting between
+[Protocol Buffers](https://developers.google.com/protocol-buffers/) and
+[Avro](https://avro.apache.org/). This can for example be used to bulk load
+protobuf messages to BigQuery.
 
-Examples
---------
+## Examples
 
 Examples use the following protobuf message:
 
@@ -46,7 +47,8 @@ func ExampleInferSchema() {
 
 ### `protoavro.Marshaler`
 
-Writes protobuf messages to an [Object Container File](https://avro.apache.org/docs/current/specification/#object-container-files).
+Writes protobuf messages to an
+[Object Container File](https://avro.apache.org/docs/current/specification/#object-container-files).
 
 ```go
 func ExampleMarshaler() {
@@ -75,7 +77,8 @@ func ExampleMarshaler() {
 
 ### `protoavro.Unmarshaler`
 
-Reads protobuf messages from a [Object Container File](https://avro.apache.org/docs/current/specification/#object-container-files).
+Reads protobuf messages from a
+[Object Container File](https://avro.apache.org/docs/current/specification/#object-container-files).
 
 ```go
 func ExampleUnmarshaler() {
@@ -95,19 +98,22 @@ func ExampleUnmarshaler() {
 
 ### Mapping
 
-**Messages** are mapped as nullable records in Avro. All fields will be nullable. Fields will have the same casing as in the protobuf descriptor.
+**Messages** are mapped as nullable records in Avro. All fields will be
+nullable. Fields will have the same casing as in the protobuf descriptor.
 
-**One of**s are mapped to nullable fields in Avro, where at most one field will be set at a time.
+**One of**s are mapped to nullable fields in Avro, where at most one field will
+be set at a time.
 
-**Maps** are mapped as a list of records with two fields, `key` and `value`. Order of map entries is undefined.
+**Maps** are mapped as a list of records with two fields, `key` and `value`.
+Order of map entries is undefined.
 
 **Enums** are mapped as enums of string values in Avro.
 
 Some **well known types** have a special mapping:
 
 | Protobuf                                  | Avro                                        |
-|-------------------------------------------|---------------------------------------------|
-| wrappers (ex google.protobuf.DoubleValue) | Nullable scalars (ex `[null, double]`\)     |
+| ----------------------------------------- | ------------------------------------------- |
+| wrappers (ex google.protobuf.DoubleValue) | Nullable scalars (ex `[null, double]`)      |
 | google.protobuf.Any                       | string containing JSON encoding of `Any`    |
 | google.protobuf.Struct                    | string containing JSON encoding of `Struct` |
 | google.protobuf.Timestamp                 | `long.timestamp-micros`                     |
@@ -117,4 +123,6 @@ Some **well known types** have a special mapping:
 
 ### Limitations
 
-Avro does not have a native type for timestamps with nanosecond precision. `google.protobuf.Timestamp` and `google.type.TimeOfDay` are truncated to microsecond precision when encoded as Avro.
+Avro does not have a native type for timestamps with nanosecond precision.
+`google.protobuf.Timestamp` and `google.type.TimeOfDay` are truncated to
+microsecond precision when encoded as Avro.
