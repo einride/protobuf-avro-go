@@ -27,6 +27,13 @@ func (o SchemaOptions) newSchemaInferrer() schemaInferrer {
 	return schemaInferrer{seen: make(map[protoreflect.FullName]struct{}), opts: o}
 }
 
+func (s schemaInferrer) getDocs(desc protoreflect.Descriptor) string {
+	if s.opts.DocCallback != nil {
+		return s.opts.DocCallback(desc)
+	}
+	return desc.ParentFile().SourceLocations().ByDescriptor(desc).LeadingComments
+}
+
 func (s schemaInferrer) inferMessageSchema(
 	message protoreflect.MessageDescriptor,
 	recursiveIndex int,
@@ -38,7 +45,7 @@ func (s schemaInferrer) inferMessageSchema(
 		return avro.Nullable(avro.Reference(message.FullName())), nil
 	}
 	s.seen[message.FullName()] = struct{}{}
-	doc := message.ParentFile().SourceLocations().ByDescriptor(message).LeadingComments
+	doc := s.getDocs(message)
 	record := avro.Record{
 		Type:      avro.RecordType,
 		Doc:       doc,
@@ -72,7 +79,7 @@ func namespace(desc protoreflect.Descriptor) string {
 }
 
 func (s schemaInferrer) inferField(field protoreflect.FieldDescriptor, recursiveIndex int) (avro.Field, error) {
-	doc := field.ParentFile().SourceLocations().ByDescriptor(field).LeadingComments
+	doc := s.getDocs(field)
 	if field.IsMap() {
 		mapType, err := s.inferMapSchema(field, recursiveIndex)
 		if err != nil {
@@ -162,7 +169,7 @@ func (s schemaInferrer) inferEnumSchema(enum protoreflect.EnumDescriptor) avro.S
 		return avro.Reference(enum.FullName())
 	}
 	s.seen[enum.FullName()] = struct{}{}
-	doc := enum.ParentFile().SourceLocations().ByDescriptor(enum).LeadingComments
+	doc := s.getDocs(enum)
 	e := avro.Enum{
 		Type:      avro.EnumType,
 		Doc:       doc,
