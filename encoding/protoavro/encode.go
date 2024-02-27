@@ -7,7 +7,7 @@ import (
 
 // encodeJSON returns the Avro JSON encoding of message.
 func (o SchemaOptions) encodeJSON(message proto.Message) (interface{}, error) {
-	return o.messageJSON(message.ProtoReflect(), 0)
+	return o.messageJSON(message.ProtoReflect(), 0, true)
 }
 
 func (o SchemaOptions) unionValue(key string, value interface{}) map[string]interface{} {
@@ -16,12 +16,12 @@ func (o SchemaOptions) unionValue(key string, value interface{}) map[string]inte
 	}
 }
 
-func (o SchemaOptions) messageJSON(message protoreflect.Message, recursiveIndex int) (interface{}, error) {
+func (o SchemaOptions) messageJSON(message protoreflect.Message, recursiveIndex int, useUnion bool) (interface{}, error) {
 	if !message.IsValid() {
 		return nil, nil
 	}
 	if isWKT(message.Descriptor().FullName()) {
-		value, err := o.encodeWKT(message)
+		value, err := o.encodeWKT(message, useUnion)
 		if err != nil {
 			return nil, err
 		}
@@ -53,7 +53,7 @@ func (o SchemaOptions) messageJSON(message protoreflect.Message, recursiveIndex 
 		}
 		record[string(field.Name())] = jsonValue
 	}
-	if o.OmitRootElement && recursiveIndex == 0 {
+	if (o.OmitRootElement && recursiveIndex == 0) || !useUnion {
 		return record, nil
 	}
 	return map[string]interface{}{
@@ -70,63 +70,79 @@ func (o SchemaOptions) fieldJSON(
 		list := make([]interface{}, 0, value.List().Len())
 		for i := 0; i < value.List().Len(); i++ {
 			v := value.List().Get(i)
-			fieldValue, err := o.fieldKindJSON(field, v, recursiveIndex)
+			fieldValue, err := o.fieldKindJSON(field, v, recursiveIndex, !o.NoNullArrayElements)
 			if err != nil {
 				return nil, err
 			}
+
+			if o.NoNullArrayElements {
+				if fieldValue == nil {
+					continue
+				}
+			}
+
 			list = append(list, fieldValue)
 		}
+
 		return o.unionValue("array", list), nil
 	}
 	if field.IsMap() {
 		return o.encodeMap(field, value.Map(), recursiveIndex)
 	}
-	return o.fieldKindJSON(field, value, recursiveIndex)
+	return o.fieldKindJSON(field, value, recursiveIndex, true)
+}
+
+func (o SchemaOptions) maybeUnionValue(key string, value interface{}, selector bool) interface{} {
+	if selector {
+		return o.unionValue(key, value)
+	}
+	return value
 }
 
 func (o SchemaOptions) fieldKindJSON(
 	field protoreflect.FieldDescriptor,
 	value protoreflect.Value,
 	recursiveIndex int,
+	useUnion bool,
 ) (interface{}, error) {
 	switch field.Kind() {
 	case protoreflect.MessageKind, protoreflect.GroupKind:
-		return o.messageJSON(value.Message(), recursiveIndex)
+		return o.messageJSON(value.Message(), recursiveIndex, useUnion)
 	case protoreflect.EnumKind:
 		if field.Enum().Values().ByNumber(value.Enum()) == nil {
-			return o.unionValue(
+			return o.maybeUnionValue(
 				string(field.Enum().FullName()),
 				string(field.Enum().Values().ByNumber(protoreflect.EnumNumber(0)).Name()),
+				useUnion,
 			), nil
 		}
-		return o.unionValue(
+		return o.maybeUnionValue(
 			string(field.Enum().FullName()),
-			string(field.Enum().Values().ByNumber(value.Enum()).Name()),
-		), nil
+			string(field.Enum().Values().ByNumber(value.Enum()).Name()), useUnion), nil
 	case protoreflect.StringKind:
-		return o.unionValue("string", value.String()), nil
+		return o.maybeUnionValue("string", value.String(), useUnion), nil
 	case protoreflect.Int32Kind,
 		protoreflect.Sfixed32Kind,
 		protoreflect.Sint32Kind:
-		return o.unionValue("int", int32(value.Int())), nil
+		return o.maybeUnionValue("int", int32(value.Int()), useUnion), nil
 	case protoreflect.Uint32Kind,
 		protoreflect.Fixed32Kind:
-		return o.unionValue("int", int32(value.Uint())), nil
+		return o.maybeUnionValue("int", int32(value.Uint()), useUnion), nil
 	case protoreflect.Int64Kind,
 		protoreflect.Sfixed64Kind,
 		protoreflect.Sint64Kind:
-		return o.unionValue("long", value.Int()), nil
+		return o.maybeUnionValue("long", value.Int(), useUnion), nil
 	case protoreflect.Fixed64Kind,
 		protoreflect.Uint64Kind:
-		return o.unionValue("long", int64(value.Uint())), nil
+		return o.maybeUnionValue("long", int64(value.Uint()), useUnion), nil
 	case protoreflect.BoolKind:
-		return o.unionValue("boolean", value.Bool()), nil
+		return o.maybeUnionValue("boolean", value.Bool(), useUnion), nil
 	case protoreflect.BytesKind:
-		return o.unionValue("bytes", value.Bytes()), nil
+		return o.maybeUnionValue("bytes", value.Bytes(), useUnion), nil
 	case protoreflect.DoubleKind:
-		return o.unionValue("double", value.Float()), nil
+		return o.maybeUnionValue("double", value.Float(), useUnion), nil
 	case protoreflect.FloatKind:
-		return o.unionValue("float", float32(value.Float())), nil
+		return o.maybeUnionValue("float", float32(value.Float()), useUnion), nil
 	}
 	return value.Interface(), nil
 }

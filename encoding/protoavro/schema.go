@@ -34,6 +34,14 @@ func (s schemaInferrer) getDocs(desc protoreflect.Descriptor) string {
 	return desc.ParentFile().SourceLocations().ByDescriptor(desc).LeadingComments
 }
 
+func (s schemaInferrer) maybeNullableArray(schema avro.Schema) avro.Schema {
+	u := avro.Nullable(schema)
+	if s.opts.NoNullArrayElements {
+		return u[1]
+	}
+	return u
+}
+
 func (s schemaInferrer) inferMessageSchema(
 	message protoreflect.MessageDescriptor,
 	recursiveIndex int,
@@ -101,7 +109,7 @@ func (s schemaInferrer) inferField(field protoreflect.FieldDescriptor, recursive
 			Doc:  doc,
 			Type: avro.Array{
 				Type:  avro.ArrayType,
-				Items: avro.Nullable(fieldKind),
+				Items: s.maybeNullableArray(fieldKind),
 			},
 		}, nil
 	}

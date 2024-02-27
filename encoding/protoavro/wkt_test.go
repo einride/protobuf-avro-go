@@ -63,11 +63,11 @@ func Test_WKT(t *testing.T) {
 	} {
 		tt := tt
 		t.Run(string(tt.ProtoReflect().Descriptor().FullName()), func(t *testing.T) {
-			encoded, err := SchemaOptions{}.encodeWKT(tt.ProtoReflect())
+			encoded, err := SchemaOptions{}.encodeWKT(tt.ProtoReflect(), true)
 			assert.NilError(t, err)
 			t.Log(encoded)
 			decoded := tt.ProtoReflect().New()
-			assert.NilError(t, decodeWKT(encoded, decoded))
+			assert.NilError(t, decodeWKT(encoded.(map[string]interface{}), decoded))
 			assert.DeepEqual(t, tt, decoded.Interface(), protocmp.Transform())
 		})
 	}

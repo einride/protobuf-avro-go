@@ -73,7 +73,7 @@ func schemaWKT(message protoreflect.MessageDescriptor) (avro.Schema, error) {
 	return nil, fmt.Errorf("uknown wellknown type %s", message.FullName())
 }
 
-func (o SchemaOptions) encodeWKT(message protoreflect.Message) (map[string]interface{}, error) {
+func (o SchemaOptions) encodeWKT(message protoreflect.Message, useUnion bool) (interface{}, error) {
 	desc := message.Descriptor()
 	switch desc.FullName() {
 	case wkt.DoubleValue,
@@ -85,7 +85,7 @@ func (o SchemaOptions) encodeWKT(message protoreflect.Message) (map[string]inter
 		wkt.BoolValue,
 		wkt.StringValue,
 		wkt.BytesValue:
-		value, err := o.encodeWrapper(message)
+		value, err := o.encodeWrapper(message, useUnion)
 		if err != nil {
 			return nil, err
 		}
@@ -173,29 +173,29 @@ func schemaWrapper(w string) (avro.Schema, error) {
 	}
 }
 
-func (o SchemaOptions) encodeWrapper(msg protoreflect.Message) (map[string]interface{}, error) {
+func (o SchemaOptions) encodeWrapper(msg protoreflect.Message, useUnion bool) (interface{}, error) {
 	if msg == nil {
 		return nil, nil
 	}
 	switch msg.Descriptor().FullName() {
 	case wkt.DoubleValue:
-		return o.unionValue("double", msg.Interface().(*wrapperspb.DoubleValue).GetValue()), nil
+		return o.maybeUnionValue("double", msg.Interface().(*wrapperspb.DoubleValue).GetValue(), useUnion), nil
 	case wkt.FloatValue:
-		return o.unionValue("float", msg.Interface().(*wrapperspb.FloatValue).GetValue()), nil
+		return o.maybeUnionValue("float", msg.Interface().(*wrapperspb.FloatValue).GetValue(), useUnion), nil
 	case wkt.Int32Value:
-		return o.unionValue("int", msg.Interface().(*wrapperspb.Int32Value).GetValue()), nil
+		return o.maybeUnionValue("int", msg.Interface().(*wrapperspb.Int32Value).GetValue(), useUnion), nil
 	case wkt.UInt32Value:
-		return o.unionValue("int", int32(msg.Interface().(*wrapperspb.UInt32Value).GetValue())), nil
+		return o.maybeUnionValue("int", int32(msg.Interface().(*wrapperspb.UInt32Value).GetValue()), useUnion), nil
 	case wkt.Int64Value:
-		return o.unionValue("long", msg.Interface().(*wrapperspb.Int64Value).GetValue()), nil
+		return o.maybeUnionValue("long", msg.Interface().(*wrapperspb.Int64Value).GetValue(), useUnion), nil
 	case wkt.UInt64Value:
-		return o.unionValue("long", int64(msg.Interface().(*wrapperspb.UInt64Value).GetValue())), nil
+		return o.maybeUnionValue("long", int64(msg.Interface().(*wrapperspb.UInt64Value).GetValue()), useUnion), nil
 	case wkt.BoolValue:
-		return o.unionValue("boolean", msg.Interface().(*wrapperspb.BoolValue).GetValue()), nil
+		return o.maybeUnionValue("boolean", msg.Interface().(*wrapperspb.BoolValue).GetValue(), useUnion), nil
 	case wkt.StringValue:
-		return o.unionValue("string", msg.Interface().(*wrapperspb.StringValue).GetValue()), nil
+		return o.maybeUnionValue("string", msg.Interface().(*wrapperspb.StringValue).GetValue(), useUnion), nil
 	case wkt.BytesValue:
-		return o.unionValue("bytes", msg.Interface().(*wrapperspb.BytesValue).GetValue()), nil
+		return o.maybeUnionValue("bytes", msg.Interface().(*wrapperspb.BytesValue).GetValue(), useUnion), nil
 	default:
 		return nil, fmt.Errorf("unknown wrapper type %s", msg.Descriptor().FullName())
 	}
