@@ -1143,21 +1143,21 @@ func TestInferSchemaOptions(t *testing.T) {
 				Fields: []avro.Field{
 					{
 						Name: "int64_list",
-						Type: avro.Nullable(avro.Array{
+						Type: avro.Array{
 							Type:  avro.ArrayType,
 							Items: avro.Long(),
-						}),
+						},
 					},
 					{
 						Name: "string_list",
-						Type: avro.Nullable(avro.Array{
+						Type: avro.Array{
 							Type:  avro.ArrayType,
 							Items: avro.String(),
-						}),
+						},
 					},
 					{
 						Name: "enum_list",
-						Type: avro.Nullable(avro.Array{
+						Type: avro.Array{
 							Type: avro.ArrayType,
 							Items: avro.Enum{
 								Type:      avro.EnumType,
@@ -1169,11 +1169,11 @@ func TestInferSchemaOptions(t *testing.T) {
 									"ENUM_VALUE2",
 								},
 							},
-						}),
+						},
 					},
 					{
 						Name: "nested_list",
-						Type: avro.Nullable(avro.Array{
+						Type: avro.Array{
 							Type: avro.ArrayType,
 							Items: avro.Record{
 								Type:      avro.RecordType,
@@ -1182,26 +1182,27 @@ func TestInferSchemaOptions(t *testing.T) {
 								Fields: []avro.Field{
 									{
 										Name: "string_list",
-										Type: avro.Nullable(avro.Array{
+										Type: avro.Array{
 											Type:  avro.ArrayType,
 											Items: avro.String(),
-										}),
+										},
 									},
 								},
 							},
-						}),
+						},
 					},
 					{
 						Name: "float_value_list",
-						Type: avro.Nullable(avro.Array{
+						Type: avro.Array{
 							Type:  avro.ArrayType,
 							Items: avro.Float(),
-						}),
+						},
 					},
 				},
 			}),
 			opt: SchemaOptions{
 				NoNullArrayElements: true,
+				NoNullArray:         true,
 			},
 		},
 		{

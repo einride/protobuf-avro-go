@@ -116,6 +116,10 @@ func (o encoder) fieldJSON(
 			list = append(list, fieldValue)
 		}
 
+		if o.opts.NoNullArray {
+			return list, nil
+		}
+
 		return o.opts.unionValue("array", list), nil
 	}
 	if field.IsMap() {

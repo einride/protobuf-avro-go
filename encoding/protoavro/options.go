@@ -11,5 +11,6 @@ type SchemaOptions struct {
 	OmitRootElement     bool
 	DocCallback         GetDocCallback
 	NoNullArrayElements bool // don't nullify array elements
+	NoNullArray         bool // don't nullify array elements
 	UniqueNames         bool // use unique names for records
 }

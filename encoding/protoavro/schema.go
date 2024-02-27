@@ -77,7 +77,13 @@ func (s schemaInferrer) inferMessageSchema(
 		if err != nil {
 			return nil, err
 		}
-		fieldSchema.Type = avro.Nullable(fieldSchema.Type)
+
+		if field.IsList() && s.opts.NoNullArray {
+
+		} else {
+			fieldSchema.Type = avro.Nullable(fieldSchema.Type)
+		}
+
 		record.Fields = append(
 			record.Fields,
 			fieldSchema,

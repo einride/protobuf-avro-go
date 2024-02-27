@@ -1154,6 +1154,7 @@ func Test_JSON_Options(t *testing.T) {
 			opts: SchemaOptions{
 				OmitRootElement:     true,
 				NoNullArrayElements: true,
+				NoNullArray:         true,
 			},
 			msg: &examplev1.ExampleList{
 				Int64List:  []int64{1, 2, 3},
@@ -1174,55 +1175,41 @@ func Test_JSON_Options(t *testing.T) {
 				},
 			},
 			expected: map[string]interface{}{
-				"int64_list": map[string]interface{}{
-					"array": []interface{}{
-						int64(1),
-						int64(2),
-						int64(3),
-					},
+				"int64_list": []interface{}{
+					int64(1),
+					int64(2),
+					int64(3),
 				},
-				"string_list": map[string]interface{}{
-					"array": []interface{}{
-						"1",
-						"2",
-						"3",
-					},
+				"string_list": []interface{}{
+					"1",
+					"2",
+					"3",
 				},
-				"enum_list": map[string]interface{}{
-					"array": []interface{}{
-						"ENUM_UNSPECIFIED",
-						"ENUM_VALUE1",
-						"ENUM_VALUE2",
-					},
+				"enum_list": []interface{}{
+					"ENUM_UNSPECIFIED",
+					"ENUM_VALUE1",
+					"ENUM_VALUE2",
 				},
-				"nested_list": map[string]interface{}{
-					"array": []interface{}{
-						map[string]interface{}{
-							"string_list": map[string]interface{}{
-								"array": []interface{}{
-									"1",
-									"2",
-									"3",
-								},
-							},
+				"nested_list": []interface{}{
+					map[string]interface{}{
+						"string_list": []interface{}{
+							"1",
+							"2",
+							"3",
 						},
-						map[string]interface{}{
-							"string_list": map[string]interface{}{
-								"array": []interface{}{
-									"4",
-									"5",
-									"6",
-								},
-							},
+					},
+					map[string]interface{}{
+						"string_list": []interface{}{
+							"4",
+							"5",
+							"6",
 						},
 					},
 				},
-				"float_value_list": map[string]interface{}{
-					"array": []interface{}{
-						float32(1),
-						float32(2),
-						float32(3),
-					},
+				"float_value_list": []interface{}{
+					float32(1),
+					float32(2),
+					float32(3),
 				},
 			},
 		},
