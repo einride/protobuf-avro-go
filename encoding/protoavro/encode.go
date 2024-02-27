@@ -106,18 +106,18 @@ func (o SchemaOptions) fieldKindJSON(
 	case protoreflect.StringKind:
 		return o.unionValue("string", value.String()), nil
 	case protoreflect.Int32Kind,
-		protoreflect.Fixed32Kind,
 		protoreflect.Sfixed32Kind,
 		protoreflect.Sint32Kind:
 		return o.unionValue("int", int32(value.Int())), nil
-	case protoreflect.Uint32Kind:
+	case protoreflect.Uint32Kind,
+		protoreflect.Fixed32Kind:
 		return o.unionValue("int", int32(value.Uint())), nil
 	case protoreflect.Int64Kind,
-		protoreflect.Fixed64Kind,
 		protoreflect.Sfixed64Kind,
 		protoreflect.Sint64Kind:
 		return o.unionValue("long", value.Int()), nil
-	case protoreflect.Uint64Kind:
+	case protoreflect.Fixed64Kind,
+		protoreflect.Uint64Kind:
 		return o.unionValue("long", int64(value.Uint())), nil
 	case protoreflect.BoolKind:
 		return o.unionValue("boolean", value.Bool()), nil
