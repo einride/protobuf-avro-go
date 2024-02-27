@@ -49,7 +49,7 @@ func (s schemaInferrer) inferMessageSchema(
 	if isWKT(message.FullName()) {
 		return schemaWKT(message)
 	}
-	if _, ok := s.seen[message.FullName()]; ok {
+	if _, ok := s.seen[message.FullName()]; ok && !s.opts.OmitSeen {
 		return avro.Nullable(avro.Reference(message.FullName())), nil
 	}
 	s.seen[message.FullName()] = struct{}{}
@@ -173,7 +173,7 @@ func (s schemaInferrer) inferFieldKind(field protoreflect.FieldDescriptor, recur
 }
 
 func (s schemaInferrer) inferEnumSchema(enum protoreflect.EnumDescriptor) avro.Schema {
-	if _, ok := s.seen[enum.FullName()]; ok {
+	if _, ok := s.seen[enum.FullName()]; ok && !s.opts.OmitSeen {
 		return avro.Reference(enum.FullName())
 	}
 	s.seen[enum.FullName()] = struct{}{}
