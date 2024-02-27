@@ -1152,9 +1152,8 @@ func Test_JSON_Options(t *testing.T) {
 		{
 			name: "examplev1.ExampleList",
 			opts: SchemaOptions{
-				OmitRootElement:     true,
-				NoNullArrayElements: true,
-				NoNullArray:         true,
+				OmitRootElement: true,
+				OmitNullArray:   true,
 			},
 			msg: &examplev1.ExampleList{
 				Int64List:  []int64{1, 2, 3},
@@ -1217,7 +1216,6 @@ func Test_JSON_Options(t *testing.T) {
 			name: "examplev1.ExampleSeen",
 			opts: SchemaOptions{
 				OmitRootElement: true,
-				UniqueNames:     true,
 			},
 			msg: &examplev1.ExampleSeen{
 				Left: &examplev1.ExampleData{
@@ -1229,10 +1227,10 @@ func Test_JSON_Options(t *testing.T) {
 			},
 			expected: map[string]interface{}{
 				"left": map[string]interface{}{
-					"root.exampleseen.left.ExampleData": map[string]any{"value": map[string]any{"string": string("left")}},
+					"einride.avro.example.v1.ExampleData": map[string]any{"value": map[string]any{"string": string("left")}},
 				},
 				"right": map[string]interface{}{
-					"root.exampleseen.right.ExampleData": map[string]any{"value": map[string]any{"string": string("right")}},
+					"einride.avro.example.v1.ExampleData": map[string]any{"value": map[string]any{"string": string("right")}},
 				},
 			},
 		},

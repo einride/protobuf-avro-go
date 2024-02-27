@@ -8,9 +8,7 @@ type GetDocCallback func(protoreflect.Descriptor) string
 // OmitRootElement is used to determine whether the root element of a message should be omitted, when writing to Avro.
 // DocCallback is used to determine the documentation for a field or message.
 type SchemaOptions struct {
-	OmitRootElement     bool
-	DocCallback         GetDocCallback
-	NoNullArrayElements bool // don't nullify array elements
-	NoNullArray         bool // don't nullify array elements
-	UniqueNames         bool // use unique names for records
+	OmitRootElement bool
+	DocCallback     GetDocCallback
+	OmitNullArray   bool // don't nullify arrays and their elements
 }

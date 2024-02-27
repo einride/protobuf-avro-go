@@ -1201,56 +1201,7 @@ func TestInferSchemaOptions(t *testing.T) {
 				},
 			}),
 			opt: SchemaOptions{
-				NoNullArrayElements: true,
-				NoNullArray:         true,
-			},
-		},
-		{
-			name: "examplev1.ExampleSeen",
-			msg:  &examplev1.ExampleSeen{},
-			expected: avro.Nullable(avro.Record{
-				Type:      avro.RecordType,
-				Namespace: "root",
-				Name:      "ExampleSeen",
-				Fields: []avro.Field{
-					{
-						Name: "left",
-						Type: avro.Union{
-							avro.Primitive{Type: "null"},
-							avro.Record{
-								Type:      "record",
-								Namespace: "root.exampleseen.left",
-								Name:      "ExampleData",
-								Fields: []avro.Field{
-									{
-										Name: "value",
-										Type: avro.Nullable(avro.String()),
-									},
-								},
-							},
-						},
-					},
-					{
-						Name: "right",
-						Type: avro.Union{
-							avro.Primitive{Type: "null"},
-							avro.Record{
-								Type:      "record",
-								Namespace: "root.exampleseen.right",
-								Name:      "ExampleData",
-								Fields: []avro.Field{
-									{
-										Name: "value",
-										Type: avro.Nullable(avro.String()),
-									},
-								},
-							},
-						},
-					},
-				},
-			}),
-			opt: SchemaOptions{
-				UniqueNames: true,
+				OmitNullArray: true,
 			},
 		},
 	} {

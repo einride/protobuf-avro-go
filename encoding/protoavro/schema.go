@@ -19,13 +19,12 @@ func (o SchemaOptions) InferSchema(desc protoreflect.MessageDescriptor) (avro.Sc
 }
 
 type schemaInferrer struct {
-	opts  SchemaOptions
-	seen  map[string]struct{}
-	names nameStack
+	opts SchemaOptions
+	seen map[string]struct{}
 }
 
 func (o SchemaOptions) newSchemaInferrer() schemaInferrer {
-	return schemaInferrer{seen: make(map[string]struct{}), opts: o, names: newNameStack()}
+	return schemaInferrer{seen: make(map[string]struct{}), opts: o}
 }
 
 func (s schemaInferrer) getDocs(desc protoreflect.Descriptor) string {
@@ -37,7 +36,7 @@ func (s schemaInferrer) getDocs(desc protoreflect.Descriptor) string {
 
 func (s schemaInferrer) maybeNullableArray(schema avro.Schema) avro.Schema {
 	u := avro.Nullable(schema)
-	if s.opts.NoNullArrayElements {
+	if s.opts.OmitNullArray {
 		return u[1]
 	}
 	return u
@@ -52,15 +51,12 @@ func (s schemaInferrer) inferMessageSchema(
 	}
 
 	n := string(message.Name())
-	ns := s.namespace(message)
+	ns := namespace(message)
 	fullName := fmt.Sprintf("%s.%s", ns, n)
 
 	if _, ok := s.seen[fullName]; ok {
 		return avro.Nullable(avro.Reference(fullName)), nil
 	}
-
-	s.names.push(n)
-	defer s.names.pop()
 
 	s.seen[fullName] = struct{}{}
 	doc := s.getDocs(message)
@@ -78,7 +74,7 @@ func (s schemaInferrer) inferMessageSchema(
 			return nil, err
 		}
 
-		if field.IsList() && s.opts.NoNullArray {
+		if field.IsList() && s.opts.OmitNullArray {
 
 		} else {
 			fieldSchema.Type = avro.Nullable(fieldSchema.Type)
@@ -98,18 +94,12 @@ func (s schemaInferrer) inferMessageSchema(
 	return avro.Nullable(record), nil
 }
 
-func (s schemaInferrer) namespace(desc protoreflect.Descriptor) string {
-	if s.opts.UniqueNames {
-		return s.names.current()
-	}
+func namespace(desc protoreflect.Descriptor) string {
 	return strings.TrimSuffix(string(desc.FullName()), "."+string(desc.Name()))
 }
 
 func (s schemaInferrer) inferField(field protoreflect.FieldDescriptor, recursiveIndex int) (avro.Field, error) {
 	doc := s.getDocs(field)
-
-	s.names.push(string(field.Name()))
-	defer s.names.pop()
 
 	if field.IsMap() {
 		mapType, err := s.inferMapSchema(field, recursiveIndex)
@@ -197,7 +187,7 @@ func (s schemaInferrer) inferFieldKind(field protoreflect.FieldDescriptor, recur
 
 func (s schemaInferrer) inferEnumSchema(enum protoreflect.EnumDescriptor) avro.Schema {
 	n := string(enum.Name())
-	ns := s.namespace(enum)
+	ns := namespace(enum)
 	fullName := fmt.Sprintf("%s.%s", ns, n)
 
 	if _, ok := s.seen[fullName]; ok {
