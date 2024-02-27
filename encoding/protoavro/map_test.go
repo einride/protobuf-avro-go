@@ -253,7 +253,8 @@ func Test_MapEncode(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			desc := tt.msg.ProtoReflect().Descriptor().Fields().ByName(tt.fieldName)
 			val := tt.msg.ProtoReflect().Get(desc)
-			got, err := tt.opts.encodeMap(desc, val.Map(), 0)
+			encoder := newEncoder(tt.opts)
+			got, err := encoder.encodeMap(desc, val.Map(), 0)
 			assert.NilError(t, err)
 			assert.DeepEqual(t, got, tt.expected)
 		})

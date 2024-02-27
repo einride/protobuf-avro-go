@@ -1226,6 +1226,29 @@ func Test_JSON_Options(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "examplev1.ExampleSeen",
+			opts: SchemaOptions{
+				OmitRootElement: true,
+				UniqueNames:     true,
+			},
+			msg: &examplev1.ExampleSeen{
+				Left: &examplev1.ExampleData{
+					Value: "left",
+				},
+				Right: &examplev1.ExampleData{
+					Value: "right",
+				},
+			},
+			expected: map[string]interface{}{
+				"left": map[string]interface{}{
+					"root.exampleseen.left.ExampleData": map[string]any{"value": map[string]any{"string": string("left")}},
+				},
+				"right": map[string]interface{}{
+					"root.exampleseen.right.ExampleData": map[string]any{"value": map[string]any{"string": string("right")}},
+				},
+			},
+		},
 	} {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {

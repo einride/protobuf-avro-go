@@ -19,7 +19,7 @@ func (s schemaInferrer) inferMapSchema(field protoreflect.FieldDescriptor, recur
 	}), nil
 }
 
-func (o *SchemaOptions) encodeMap(
+func (o *encoder) encodeMap(
 	field protoreflect.FieldDescriptor,
 	m protoreflect.Map,
 	recursiveIndex int,
@@ -56,7 +56,7 @@ func (o *SchemaOptions) encodeMap(
 			"value": valueValue,
 		})
 	}
-	return o.unionValue("array", entries), nil
+	return o.opts.unionValue("array", entries), nil
 }
 
 func (o SchemaOptions) decodeMap(data interface{}, f protoreflect.FieldDescriptor, mp protoreflect.Map) error {

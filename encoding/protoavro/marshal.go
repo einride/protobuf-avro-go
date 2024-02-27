@@ -53,7 +53,9 @@ func (m *Marshaler) Marshal(messages ...proto.Message) error {
 		if a != b {
 			return fmt.Errorf("expected message '%s' but got '%s'", a, b)
 		}
-		m, err := m.opts.encodeJSON(message)
+
+		encoder := newEncoder(m.opts)
+		m, err := encoder.encodeJSON(message)
 		if err != nil {
 			return fmt.Errorf("encode json: %w", err)
 		}
@@ -67,7 +69,8 @@ func (m *Marshaler) Marshal(messages ...proto.Message) error {
 
 // Encode encodes the message.
 func (o SchemaOptions) Encode(message proto.Message) (interface{}, error) {
-	encJSON, err := o.encodeJSON(message)
+	encoder := newEncoder(o)
+	encJSON, err := encoder.encodeJSON(message)
 	if err != nil {
 		return nil, fmt.Errorf("encode json: %w", err)
 	}

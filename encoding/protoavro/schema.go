@@ -19,12 +19,13 @@ func (o SchemaOptions) InferSchema(desc protoreflect.MessageDescriptor) (avro.Sc
 }
 
 type schemaInferrer struct {
-	opts SchemaOptions
-	seen map[protoreflect.FullName]struct{}
+	opts  SchemaOptions
+	seen  map[string]struct{}
+	names nameStack
 }
 
 func (o SchemaOptions) newSchemaInferrer() schemaInferrer {
-	return schemaInferrer{seen: make(map[protoreflect.FullName]struct{}), opts: o}
+	return schemaInferrer{seen: make(map[string]struct{}), opts: o, names: newNameStack()}
 }
 
 func (s schemaInferrer) getDocs(desc protoreflect.Descriptor) string {
@@ -49,16 +50,25 @@ func (s schemaInferrer) inferMessageSchema(
 	if isWKT(message.FullName()) {
 		return schemaWKT(message)
 	}
-	if _, ok := s.seen[message.FullName()]; ok && !s.opts.OmitSeen {
-		return avro.Nullable(avro.Reference(message.FullName())), nil
+
+	n := string(message.Name())
+	ns := s.namespace(message)
+	fullName := fmt.Sprintf("%s.%s", ns, n)
+
+	if _, ok := s.seen[fullName]; ok {
+		return avro.Nullable(avro.Reference(fullName)), nil
 	}
-	s.seen[message.FullName()] = struct{}{}
+
+	s.names.push(n)
+	defer s.names.pop()
+
+	s.seen[fullName] = struct{}{}
 	doc := s.getDocs(message)
 	record := avro.Record{
 		Type:      avro.RecordType,
 		Doc:       doc,
-		Name:      string(message.Name()),
-		Namespace: namespace(message),
+		Name:      n,
+		Namespace: ns,
 		Fields:    make([]avro.Field, 0, message.Fields().Len()),
 	}
 	for i := 0; i < message.Fields().Len(); i++ {
@@ -82,12 +92,19 @@ func (s schemaInferrer) inferMessageSchema(
 	return avro.Nullable(record), nil
 }
 
-func namespace(desc protoreflect.Descriptor) string {
+func (s schemaInferrer) namespace(desc protoreflect.Descriptor) string {
+	if s.opts.UniqueNames {
+		return s.names.current()
+	}
 	return strings.TrimSuffix(string(desc.FullName()), "."+string(desc.Name()))
 }
 
 func (s schemaInferrer) inferField(field protoreflect.FieldDescriptor, recursiveIndex int) (avro.Field, error) {
 	doc := s.getDocs(field)
+
+	s.names.push(string(field.Name()))
+	defer s.names.pop()
+
 	if field.IsMap() {
 		mapType, err := s.inferMapSchema(field, recursiveIndex)
 		if err != nil {
@@ -173,16 +190,20 @@ func (s schemaInferrer) inferFieldKind(field protoreflect.FieldDescriptor, recur
 }
 
 func (s schemaInferrer) inferEnumSchema(enum protoreflect.EnumDescriptor) avro.Schema {
-	if _, ok := s.seen[enum.FullName()]; ok && !s.opts.OmitSeen {
-		return avro.Reference(enum.FullName())
+	n := string(enum.Name())
+	ns := s.namespace(enum)
+	fullName := fmt.Sprintf("%s.%s", ns, n)
+
+	if _, ok := s.seen[fullName]; ok {
+		return avro.Reference(fullName)
 	}
-	s.seen[enum.FullName()] = struct{}{}
+	s.seen[fullName] = struct{}{}
 	doc := s.getDocs(enum)
 	e := avro.Enum{
 		Type:      avro.EnumType,
 		Doc:       doc,
-		Name:      string(enum.Name()),
-		Namespace: namespace(enum),
+		Name:      n,
+		Namespace: ns,
 	}
 	for i := 0; i < enum.Values().Len(); i++ {
 		e.Symbols = append(e.Symbols, string(enum.Values().Get(i).Name()))
