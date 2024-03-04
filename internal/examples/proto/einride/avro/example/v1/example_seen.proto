@@ -1,0 +1,17 @@
+
+syntax = "proto3";
+
+package einride.avro.example.v1;
+
+option go_package = "go.einride.tech/protobuf-avro/internal/examples/proto/gen/einride/avro/example/v1;examplev1";
+
+import "google/protobuf/any.proto";
+
+message ExampleData {
+    string value = 1;
+}
+
+message ExampleSeen {
+    ExampleData left = 1;
+    ExampleData right = 2;
+}
