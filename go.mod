@@ -7,7 +7,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/linkedin/goavro/v2 v2.12.0
 	google.golang.org/genproto v0.0.0-20231016165738-49dd2c1f3d0b
-	google.golang.org/protobuf v1.31.0
+	google.golang.org/protobuf v1.33.0
 	gotest.tools/v3 v3.5.1
 )
 
