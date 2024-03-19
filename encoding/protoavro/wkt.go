@@ -271,9 +271,9 @@ func schemaDate() avro.Schema {
 
 func (o SchemaOptions) encodeDate(d *date.Date) map[string]interface{} {
 	civilDate := civil.Date{
-		Year:  int(d.Year),
-		Month: time.Month(d.Month),
-		Day:   int(d.Day),
+		Year:  int(d.GetYear()),
+		Month: time.Month(d.GetMonth()),
+		Day:   int(d.GetDay()),
 	}
 	epoch := civil.Date{
 		Year:  1970,
@@ -366,10 +366,10 @@ func schemaTimeOfDay() avro.Schema {
 }
 
 func (o *SchemaOptions) encodeTimeOfDay(t *timeofday.TimeOfDay) map[string]interface{} {
-	d := time.Hour*time.Duration(t.Hours) +
-		time.Minute*time.Duration(t.Minutes) +
-		time.Second*time.Duration(t.Seconds) +
-		time.Nanosecond*time.Duration(t.Nanos)
+	d := time.Hour*time.Duration(t.GetHours()) +
+		time.Minute*time.Duration(t.GetMinutes()) +
+		time.Second*time.Duration(t.GetSeconds()) +
+		time.Nanosecond*time.Duration(t.GetNanos())
 	return o.unionValue("long.time-micros", d.Microseconds())
 }
 
