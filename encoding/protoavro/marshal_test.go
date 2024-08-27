@@ -85,6 +85,19 @@ func Test_MarshalSymmetric(t *testing.T) {
 				TimeOfDay: &timeofday.TimeOfDay{Hours: 20},
 			},
 		},
+		{
+			name: "examplev1.ExampleNumbers",
+			msg: &examplev1.ExampleNumbers{
+				Valint32:  1,
+				Valint64:  1,
+				Valfloat:  1.0,
+				Valdouble: 1.0,
+				Valuint32: 1,
+				Valuint64: 1,
+				Valsint32: 1,
+				Valsint64: 1,
+			},
+		},
 	} {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
