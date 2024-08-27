@@ -207,13 +207,13 @@ func decodeWrapper(w string, v map[string]interface{}) (proto.Message, error) {
 	}
 	switch w {
 	case wkt.DoubleValue:
-		f, err := decodeFloatLike(v, "double")
+		f, err := decodeFloat(v, "double")
 		if err != nil {
 			return nil, fmt.Errorf("google.protobuf.DoubleValue: %w", err)
 		}
 		return wrapperspb.Double(f), nil
 	case wkt.FloatValue:
-		f, err := decodeFloatLike(v, "float")
+		f, err := decodeFloat(v, "float")
 		if err != nil {
 			return nil, fmt.Errorf("google.protobuf.FloatValue: %w", err)
 		}
@@ -413,7 +413,7 @@ func (o *SchemaOptions) encodeDuration(dur *durationpb.Duration) map[string]inte
 }
 
 func decodeDuration(v map[string]interface{}) (*durationpb.Duration, error) {
-	seconds, err := decodeFloatLike(v, "float")
+	seconds, err := decodeFloat(v, "float")
 	if err != nil {
 		return nil, fmt.Errorf("google.protobuf.Duration: %w", err)
 	}
@@ -491,7 +491,20 @@ func tryDecodeDuration(v map[string]interface{}, key string) (time.Duration, boo
 	return time.Duration(0), false
 }
 
-func decodeFloatLike(v map[string]interface{}, key string) (float64, error) {
+func decodeFloatLike(v interface{}, key string) (float64, error) {
+	if flt, ok := v.(float64); ok {
+		return flt, nil
+	}
+	if flt, ok := v.(float32); ok {
+		return float64(flt), nil
+	}
+	if m, ok := v.(map[string]interface{}); ok {
+		return decodeFloat(m, key)
+	}
+	return 0.0, fmt.Errorf("expected float-like, got %v", v)
+}
+
+func decodeFloat(v map[string]interface{}, key string) (float64, error) {
 	maybeFloat, ok := v[key]
 	if !ok {
 		return 0, fmt.Errorf("expected key '%s'", key)

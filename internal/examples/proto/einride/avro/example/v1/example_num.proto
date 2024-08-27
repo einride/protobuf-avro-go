@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package einride.avro.example.v1;
+
+option go_package = "go.einride.tech/protobuf-avro/internal/examples/proto/gen/einride/avro/example/v1;examplev1";
+
+message ExampleNumbers {
+  int32 valint32 = 1;
+  int64 valint64 = 2;
+
+  float valfloat = 3;
+  double valdouble = 4;
+
+  uint32 valuint32 = 5;
+  uint64 valuint64 = 6;
+
+  sint32 valsint32 = 7;
+  sint64 valsint64 = 8;
+}

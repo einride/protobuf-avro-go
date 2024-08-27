@@ -146,17 +146,17 @@ func (o *SchemaOptions) decodeFieldKind(
 		}
 		return protoreflect.ValueOfEnum(0), nil
 	case protoreflect.DoubleKind:
-		dbl, ok := data.(float64)
-		if !ok {
-			return protoreflect.Value{}, fmt.Errorf("field %s: expected float64, got %T", f.Name(), data)
+		dbl, err := decodeFloatLike(data, "double")
+		if err != nil {
+			return protoreflect.Value{}, fmt.Errorf("field %s: %w", f.Name(), err)
 		}
 		return protoreflect.ValueOfFloat64(dbl), nil
 	case protoreflect.FloatKind:
-		flt, ok := data.(float32)
-		if !ok {
-			return protoreflect.Value{}, fmt.Errorf("field %s: expected float32, got %T", f.Name(), data)
+		flt, err := decodeFloatLike(data, "float")
+		if err != nil {
+			return protoreflect.Value{}, fmt.Errorf("field %s: %w", f.Name(), err)
 		}
-		return protoreflect.ValueOfFloat32(flt), nil
+		return protoreflect.ValueOfFloat32(float32(flt)), nil
 	}
 	return protoreflect.Value{}, fmt.Errorf("unexpected kind %s", f.Kind())
 }
