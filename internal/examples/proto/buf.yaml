@@ -7,4 +7,4 @@ deps:
 
 lint:
   use:
-    - DEFAULT
+    - STANDARD

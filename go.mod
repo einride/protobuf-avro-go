@@ -1,6 +1,8 @@
 module go.einride.tech/protobuf-avro
 
-go 1.20
+go 1.21
+
+toolchain go1.22.5
 
 require (
 	cloud.google.com/go v0.116.0
