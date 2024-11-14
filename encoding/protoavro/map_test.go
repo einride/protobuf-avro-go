@@ -174,7 +174,6 @@ func Test_MapSchema(t *testing.T) {
 			}),
 		},
 	} {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			schema, err := tt.opts.newSchemaInferrer().inferMapSchema(
 				tt.msg.ProtoReflect().Descriptor().Fields().ByName(tt.fieldName),
@@ -249,7 +248,6 @@ func Test_MapEncode(t *testing.T) {
 			},
 		},
 	} {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			desc := tt.msg.ProtoReflect().Descriptor().Fields().ByName(tt.fieldName)
 			val := tt.msg.ProtoReflect().Get(desc)
@@ -322,7 +320,6 @@ func Test_MapDecode(t *testing.T) {
 			expectErr: "missing 'value' in map entry for 'string_to_string'",
 		},
 	} {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			desc := tt.msg.ProtoReflect().Descriptor().Fields().ByName(tt.fieldName)
 			val := tt.msg.ProtoReflect().Mutable(desc)

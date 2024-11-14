@@ -61,7 +61,6 @@ func Test_WKT(t *testing.T) {
 		durationpb.New(time.Microsecond),
 		durationpb.New(time.Minute*59 + time.Second*43),
 	} {
-		tt := tt
 		t.Run(string(tt.ProtoReflect().Descriptor().FullName()), func(t *testing.T) {
 			encoded, err := SchemaOptions{}.encodeWKT(tt.ProtoReflect())
 			assert.NilError(t, err)
@@ -139,7 +138,6 @@ func Test_DecodeWKTErr(t *testing.T) {
 			errContains: "google.type.TimeOfDay: expected key 'long.time-micros'",
 		},
 	} {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			err := decodeWKT(tt.data, tt.msg.ProtoReflect())
 			assert.ErrorContains(t, err, tt.errContains)

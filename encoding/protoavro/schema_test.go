@@ -558,7 +558,6 @@ func TestInferSchema(t *testing.T) {
 			}),
 		},
 	} {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			got, err := InferSchema(tt.msg.ProtoReflect().Descriptor())
@@ -1116,7 +1115,6 @@ func TestInferRootSchema(t *testing.T) {
 			},
 		},
 	} {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			got, err := SchemaOptions{OmitRootElement: true}.InferSchema(tt.msg.ProtoReflect().Descriptor())
