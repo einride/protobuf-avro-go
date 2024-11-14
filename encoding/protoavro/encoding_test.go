@@ -568,7 +568,6 @@ func Test_JSON(t *testing.T) {
 			},
 		},
 	} {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			// t.Parallel()
 			got, err := tt.opts.encodeJSON(tt.msg)
@@ -1114,7 +1113,6 @@ func Test_OmitRoot_JSON(t *testing.T) {
 			},
 		},
 	} {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			tt.opts = SchemaOptions{OmitRootElement: true}
 			// t.Parallel()
