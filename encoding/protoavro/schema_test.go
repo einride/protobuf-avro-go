@@ -1123,3 +1123,91 @@ func TestInferRootSchema(t *testing.T) {
 		})
 	}
 }
+
+func TestInferSchemaOptions(t *testing.T) {
+	for _, tt := range []struct {
+		name     string
+		msg      proto.Message
+		expected avro.Schema
+		opt      SchemaOptions
+	}{
+		{
+			name: "examplev1.ExampleList",
+			msg:  &examplev1.ExampleList{},
+			expected: avro.Nullable(avro.Record{
+				Type:      avro.RecordType,
+				Name:      "ExampleList",
+				Namespace: "einride.avro.example.v1",
+				Fields: []avro.Field{
+					{
+						Name: "int64_list",
+						Type: avro.Array{
+							Type:  avro.ArrayType,
+							Items: avro.Long(),
+						},
+					},
+					{
+						Name: "string_list",
+						Type: avro.Array{
+							Type:  avro.ArrayType,
+							Items: avro.String(),
+						},
+					},
+					{
+						Name: "enum_list",
+						Type: avro.Array{
+							Type: avro.ArrayType,
+							Items: avro.Enum{
+								Type:      avro.EnumType,
+								Name:      "Enum",
+								Namespace: "einride.avro.example.v1.ExampleList",
+								Symbols: []string{
+									"ENUM_UNSPECIFIED",
+									"ENUM_VALUE1",
+									"ENUM_VALUE2",
+								},
+							},
+						},
+					},
+					{
+						Name: "nested_list",
+						Type: avro.Array{
+							Type: avro.ArrayType,
+							Items: avro.Record{
+								Type:      avro.RecordType,
+								Name:      "Nested",
+								Namespace: "einride.avro.example.v1.ExampleList",
+								Fields: []avro.Field{
+									{
+										Name: "string_list",
+										Type: avro.Array{
+											Type:  avro.ArrayType,
+											Items: avro.String(),
+										},
+									},
+								},
+							},
+						},
+					},
+					{
+						Name: "float_value_list",
+						Type: avro.Array{
+							Type:  avro.ArrayType,
+							Items: avro.Float(),
+						},
+					},
+				},
+			}),
+			opt: SchemaOptions{
+				OmitNullArray: true,
+			},
+		},
+	} {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.opt.InferSchema(tt.msg.ProtoReflect().Descriptor())
+			assert.NilError(t, err)
+			assert.DeepEqual(t, tt.expected, got)
+		})
+	}
+}

@@ -1140,6 +1140,119 @@ func Test_OmitRoot_JSON(t *testing.T) {
 	}
 }
 
+func Test_JSON_Options(t *testing.T) {
+	for _, tt := range []struct {
+		name     string
+		msg      proto.Message
+		opts     SchemaOptions
+		expected map[string]interface{}
+	}{
+		{
+			name: "examplev1.ExampleList",
+			opts: SchemaOptions{
+				OmitRootElement: true,
+				OmitNullArray:   true,
+			},
+			msg: &examplev1.ExampleList{
+				Int64List:  []int64{1, 2, 3},
+				StringList: []string{"1", "2", "3"},
+				EnumList: []examplev1.ExampleList_Enum{
+					examplev1.ExampleList_ENUM_UNSPECIFIED,
+					examplev1.ExampleList_ENUM_VALUE1,
+					examplev1.ExampleList_ENUM_VALUE2,
+				},
+				NestedList: []*examplev1.ExampleList_Nested{
+					{StringList: []string{"1", "2", "3"}},
+					{StringList: []string{"4", "5", "6"}},
+				},
+				FloatValueList: []*wrapperspb.FloatValue{
+					{Value: 1},
+					{Value: 2},
+					{Value: 3},
+				},
+			},
+			expected: map[string]interface{}{
+				"int64_list": []interface{}{
+					int64(1),
+					int64(2),
+					int64(3),
+				},
+				"string_list": []interface{}{
+					"1",
+					"2",
+					"3",
+				},
+				"enum_list": []interface{}{
+					"ENUM_UNSPECIFIED",
+					"ENUM_VALUE1",
+					"ENUM_VALUE2",
+				},
+				"nested_list": []interface{}{
+					map[string]interface{}{
+						"string_list": []interface{}{
+							"1",
+							"2",
+							"3",
+						},
+					},
+					map[string]interface{}{
+						"string_list": []interface{}{
+							"4",
+							"5",
+							"6",
+						},
+					},
+				},
+				"float_value_list": []interface{}{
+					float32(1),
+					float32(2),
+					float32(3),
+				},
+			},
+		},
+		{
+			name: "examplev1.ExampleSeen",
+			opts: SchemaOptions{
+				OmitRootElement: true,
+			},
+			msg: &examplev1.ExampleSeen{
+				Left: &examplev1.ExampleData{
+					Value: "left",
+				},
+				Right: &examplev1.ExampleData{
+					Value: "right",
+				},
+			},
+			expected: map[string]interface{}{
+				"left": map[string]interface{}{
+					"einride.avro.example.v1.ExampleData": map[string]any{"value": map[string]any{"string": string("left")}},
+				},
+				"right": map[string]interface{}{
+					"einride.avro.example.v1.ExampleData": map[string]any{"value": map[string]any{"string": string("right")}},
+				},
+			},
+		},
+	} {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			// t.Parallel()
+			got, err := tt.opts.encodeJSON(tt.msg)
+			assert.NilError(t, err)
+			assert.DeepEqual(t, tt.expected, got)
+
+			// assert that it matches schema
+			schema, err := tt.opts.InferSchema(tt.msg.ProtoReflect().Descriptor())
+			assert.NilError(t, err)
+			schemaBytes, err := json.Marshal(schema)
+			assert.NilError(t, err)
+			codec, err := goavro.NewCodec(string(schemaBytes))
+			assert.NilError(t, err)
+			_, err = codec.BinaryFromNative(nil, got)
+			assert.NilError(t, err)
+		})
+	}
+}
+
 func mustAny(t *testing.T, msg proto.Message) *anypb.Any {
 	a, err := anypb.New(msg)
 	assert.NilError(t, err)

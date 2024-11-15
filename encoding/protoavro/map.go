@@ -43,11 +43,11 @@ func (o *SchemaOptions) encodeMap(
 	keyField := field.MapKey()
 	for _, key := range keys {
 		value := m.Get(key)
-		keyValue, err := o.fieldKindJSON(keyField, key.Value(), recursiveIndex)
+		keyValue, err := o.fieldKindJSON(keyField, key.Value(), recursiveIndex, true)
 		if err != nil {
 			return nil, err
 		}
-		valueValue, err := o.fieldKindJSON(valueField, value, recursiveIndex)
+		valueValue, err := o.fieldKindJSON(valueField, value, recursiveIndex, true)
 		if err != nil {
 			return nil, err
 		}
