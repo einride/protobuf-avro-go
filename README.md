@@ -1,4 +1,13 @@
-# Protobuf + Avro
+# DEPRECATED
+
+This repository is no longer maintained, as it is no longer used by any of the
+teams that have been maintaining it.
+
+If you are looking to load protobuf messages into BigQuery, consider using
+Google
+[BigQuery Storage API](https://cloud.google.com/bigquery/docs/reference/storage/rpc).
+
+## Protobuf + Avro
 
 Functionality for converting between
 [Protocol Buffers](https://developers.google.com/protocol-buffers/) and
