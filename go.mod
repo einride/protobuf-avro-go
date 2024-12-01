@@ -9,7 +9,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/linkedin/goavro/v2 v2.13.0
 	google.golang.org/genproto v0.0.0-20241113202542-65e8d215514f
-	google.golang.org/protobuf v1.35.1
+	google.golang.org/protobuf v1.35.2
 	gotest.tools/v3 v3.5.1
 )
 
